@@ -234,11 +234,12 @@ img{display:block; max-width:100%;}
     <form id="checkout-form" onsubmit="processarCheckout(event)">
       
       <div class="form-section-title">Dados de Contato</div>
-      <div class="form-row">
-        <div class="form-group"><label>Nome Completo</label><input type="text" id="chk-nome" required></div>
-        <div class="form-group"><label>WhatsApp</label><input type="text" id="chk-tel" required oninput="maskPhone(event)" maxlength="15"></div>
+      <div class="form-group"><label>Nome Completo *</label><input type="text" id="chk-nome" required></div>
+      <div class="form-row" style="margin-top:-5px">
+        <div class="form-group" style="flex:1"><label>DDD *</label><input type="text" id="chk-ddd" required maxlength="2" placeholder="Ex: 11" oninput="this.value=this.value.replace(/\D/g,'')"></div>
+        <div class="form-group" style="flex:4"><label>WhatsApp *</label><input type="text" id="chk-tel-num" required placeholder="Ex: 99999-9999" oninput="maskPhoneNum(event)" maxlength="10"></div>
       </div>
-      <div class="form-group" style="margin-top: -5px;"><label>E-mail</label><input type="email" id="chk-email" required></div>
+      <div class="form-group" style="margin-top: -5px;"><label>E-mail *</label><input type="email" id="chk-email" required></div>
 
       <div class="form-section-title">Entrega</div>
       <div class="form-row">
@@ -250,7 +251,13 @@ img{display:block; max-width:100%;}
         <div class="form-group"><label>Cidade *</label><input type="text" id="chk-cidade" required></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Estado (UF) *</label><input type="text" id="chk-uf" required maxlength="2"></div>
+        <div class="form-group">
+          <label>Estado (UF) *</label>
+          <select id="chk-uf" required style="background:white; cursor:pointer;">
+            <option value="">Selecione...</option>
+            <option value="AC">AC</option><option value="AL">AL</option><option value="AP">AP</option><option value="AM">AM</option><option value="BA">BA</option><option value="CE">CE</option><option value="DF">DF</option><option value="ES">ES</option><option value="GO">GO</option><option value="MA">MA</option><option value="MT">MT</option><option value="MS">MS</option><option value="MG">MG</option><option value="PA">PA</option><option value="PB">PB</option><option value="PR">PR</option><option value="PE">PE</option><option value="PI">PI</option><option value="RJ">RJ</option><option value="RN">RN</option><option value="RS">RS</option><option value="RO">RO</option><option value="RR">RR</option><option value="SC">SC</option><option value="SP">SP</option><option value="SE">SE</option><option value="TO">TO</option>
+          </select>
+        </div>
         <div class="form-group"><label>CEP *</label><input type="text" id="chk-cep" required></div>
       </div>
       
@@ -512,6 +519,14 @@ img{display:block; max-width:100%;}
     if (v.length > 7) v = v.replace(/(\d)(\d{4})$/, '$1-$2');
     event.target.value = v;
   }
+  
+  function maskPhoneNum(event) {
+    let v = event.target.value.replace(/\D/g, '');
+    if (v.length > 9) v = v.slice(0, 9);
+    if (v.length > 4) v = v.replace(/^(\d{5})(\d)/g, '$1-$2');
+    event.target.value = v;
+  }
+  
   function validarEmailDominio(email) { return /^[^\s@]+@(gmail\.com|hotmail\.com|outlook\.com|yahoo\.com|icloud\.com|live\.com|[^\s@]+\.com(\.br)?)$/i.test(email); }
   function togglePw(id, btn) { const i = document.getElementById(id); const icon = btn.querySelector('i'); if(i.type === 'password'){ i.type = 'text'; icon.classList.replace('ph-eye','ph-eye-slash'); } else { i.type = 'password'; icon.classList.replace('ph-eye-slash','ph-eye'); } }
 
@@ -640,7 +655,19 @@ img{display:block; max-width:100%;}
     // Preencher dados no modal
     document.getElementById('chk-nome').value = userLogged.nome || '';
     document.getElementById('chk-email').value = userLogged.email || '';
-    document.getElementById('chk-tel').value = userLogged.telefone || '';
+    
+    // Separa DDD e Numéro da conta do cliente, se existir
+    let ddd = '', telNum = '';
+    if(userLogged.telefone) {
+      let apenasNumeros = userLogged.telefone.replace(/\D/g, '');
+      if(apenasNumeros.length >= 2) {
+        ddd = apenasNumeros.substring(0, 2);
+        telNum = apenasNumeros.substring(2);
+        if(telNum.length > 5) telNum = telNum.replace(/^(\d{5})(\d)/, '$1-$2');
+      }
+    }
+    document.getElementById('chk-ddd').value = ddd;
+    document.getElementById('chk-tel-num').value = telNum;
     
     // Construir resumo
     const summaryBox = document.getElementById('checkout-summary');
@@ -674,12 +701,13 @@ img{display:block; max-width:100%;}
 
     const total = carrinho.reduce((acc, item) => acc + getPrecoComDesconto(item), 0);
     const pag = document.querySelector('input[name="chk-pag"]:checked').value;
+    const telefoneCompleto = `(${document.getElementById('chk-ddd').value}) ${document.getElementById('chk-tel-num').value}`;
 
     const payload = {
       user_id: userLogged.id,
       cliente_email: document.getElementById('chk-email').value,
       cliente_nome: document.getElementById('chk-nome').value,
-      cliente_telefone: document.getElementById('chk-tel').value,
+      cliente_telefone: telefoneCompleto,
       endereco: document.getElementById('chk-rua').value,
       complemento: document.getElementById('chk-comp').value,
       bairro: document.getElementById('chk-bairro').value,
