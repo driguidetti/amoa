@@ -243,8 +243,9 @@ img{display:block; max-width:100%;}
 
       <div class="form-section-title">Entrega</div>
       <div class="form-row">
-        <div class="form-group" style="flex:2"><label>Endereço e Número *</label><input type="text" id="chk-rua" required></div>
-        <div class="form-group" style="flex:1"><label>Complemento</label><input type="text" id="chk-comp"></div>
+        <div class="form-group" style="flex:3"><label>Endereço (Rua/Av) *</label><input type="text" id="chk-rua" required></div>
+        <div class="form-group" style="flex:1"><label>Número *</label><input type="text" id="chk-numero" required></div>
+        <div class="form-group" style="flex:2"><label>Complemento</label><input type="text" id="chk-comp"></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>Bairro *</label><input type="text" id="chk-bairro" required></div>
@@ -523,7 +524,7 @@ img{display:block; max-width:100%;}
   function maskPhoneNum(event) {
     let v = event.target.value.replace(/\D/g, '');
     if (v.length > 9) v = v.slice(0, 9);
-    if (v.length > 4) v = v.replace(/^(\d{5})(\d)/g, '$1-$2');
+    if (v.length > 4) v = v.replace(/^(\d{4,5})(\d)/g, '$1-$2');
     event.target.value = v;
   }
   
@@ -656,14 +657,14 @@ img{display:block; max-width:100%;}
     document.getElementById('chk-nome').value = userLogged.nome || '';
     document.getElementById('chk-email').value = userLogged.email || '';
     
-    // Separa DDD e Numéro da conta do cliente, se existir
+    // Separa DDD e Número da conta do cliente, se existir
     let ddd = '', telNum = '';
     if(userLogged.telefone) {
       let apenasNumeros = userLogged.telefone.replace(/\D/g, '');
       if(apenasNumeros.length >= 2) {
         ddd = apenasNumeros.substring(0, 2);
         telNum = apenasNumeros.substring(2);
-        if(telNum.length > 5) telNum = telNum.replace(/^(\d{5})(\d)/, '$1-$2');
+        if(telNum.length > 5) telNum = telNum.replace(/^(\d{4,5})(\d)/, '$1-$2');
       }
     }
     document.getElementById('chk-ddd').value = ddd;
@@ -702,13 +703,14 @@ img{display:block; max-width:100%;}
     const total = carrinho.reduce((acc, item) => acc + getPrecoComDesconto(item), 0);
     const pag = document.querySelector('input[name="chk-pag"]:checked').value;
     const telefoneCompleto = `(${document.getElementById('chk-ddd').value}) ${document.getElementById('chk-tel-num').value}`;
+    const enderecoCompleto = `${document.getElementById('chk-rua').value}, ${document.getElementById('chk-numero').value}`;
 
     const payload = {
       user_id: userLogged.id,
       cliente_email: document.getElementById('chk-email').value,
       cliente_nome: document.getElementById('chk-nome').value,
       cliente_telefone: telefoneCompleto,
-      endereco: document.getElementById('chk-rua').value,
+      endereco: enderecoCompleto,
       complemento: document.getElementById('chk-comp').value,
       bairro: document.getElementById('chk-bairro').value,
       cidade: document.getElementById('chk-cidade').value,
