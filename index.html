@@ -352,6 +352,13 @@ img{display:block; max-width:100%;}
 </div>
 
 <script>
+  // Chaves Reais Supabase
+  const SUPABASE_URL = 'https://stiqoqwdhrdydokjhwcn.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0aXFvcXdkaHJkeWRva2pod2NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NDk3ODksImV4cCI6MjEwNDIyNTc4OX0.nbT9KDHFFBa_X_0392ywPZzHth5QrWtycYWHi2prnx4';
+  
+  // Conexão Ativada
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
   let carrinho = [];
 
   function formatarMoeda(valor) {
@@ -457,7 +464,7 @@ img{display:block; max-width:100%;}
     btn.classList.add('active');
   }
 
-  // Lógica Administrativa
+  // Lógica Administrativa e Autenticação
   function abrirAdmin(e) {
     e.preventDefault();
     document.getElementById('store-view').classList.add('hide');
@@ -470,18 +477,56 @@ img{display:block; max-width:100%;}
     document.getElementById('store-view').classList.remove('hide');
   }
 
-  function tentarLoginAdmin() {
+  async function tentarLoginAdmin() {
     const email = document.getElementById('admin-email').value;
     const pass = document.getElementById('admin-pw').value;
+    const errorDiv = document.getElementById('admin-login-error');
     
     if(!email || !pass) {
-      document.getElementById('admin-login-error').innerText = "Preencha e-mail e senha.";
+      errorDiv.innerText = "Preencha e-mail e senha.";
       return;
     }
 
-    // Como as credenciais fixas foram removidas por segurança, 
-    // a integração futura com supabase.auth entrará exatamente aqui.
-    document.getElementById('admin-login-error').innerText = "Integração de login pendente (Supabase Auth).";
+    errorDiv.innerText = "Autenticando no banco de dados...";
+
+    // 1. Tenta o login na Autenticação do Supabase
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email: email,
+      password: pass
+    });
+
+    if (authError) {
+      errorDiv.innerText = "E-mail ou senha incorretos.";
+      return;
+    }
+
+    // 2. Verifica se o usuário logado tem permissão de superadmin na tabela profiles
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', authData.user.id)
+      .single();
+
+    if (profileError || profileData.role !== 'superadmin') {
+      errorDiv.innerText = "Acesso negado. Sua conta não tem permissão de administrador.";
+      await supabase.auth.signOut();
+      return;
+    }
+
+    // 3. Sucesso total: Limpa o erro e abre o painel
+    errorDiv.innerText = "";
+    acessarPainel();
+  }
+
+  function acessarPainel() {
+    // Renderiza uma tela temporária de sucesso dentro da caixa de login
+    document.getElementById('admin-login-wrap').innerHTML = `
+      <div class="admin-login-box" style="max-width: 600px;">
+        <h2 style="color:var(--verde-escuro); font-style:italic">Painel Administrativo</h2>
+        <p style="color:var(--texto-suave); margin-bottom: 20px;">Bem-vindo, Administrador! Suas credenciais foram validadas com sucesso.</p>
+        <button class="btn-secondary" onclick="location.reload()">Sair do Sistema</button>
+      </div>
+    `;
   }
 </script>
 </body>
