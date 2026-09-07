@@ -154,27 +154,47 @@ img{display:block; max-width:100%;}
 .btn-secondary{flex:1; background:white; border:1px solid var(--linha); padding:12px; border-radius:4px; color:var(--texto-suave); font-size:0.95rem;}
 .btn-primary{flex:2; background: var(--verde-escuro); color:white; border:none; padding:12px; border-radius:4px; font-size:0.95rem;}
 
-/* ---------- WHATSAPP FLOAT ---------- */
+/* ---------- PANELS (USER & ADMIN) ---------- */
+.dashboard-container { max-width: 1180px; margin: 2rem auto; padding: 0 1.5rem; display: flex; gap: 2rem; font-family: Arial, sans-serif;}
+.sidebar { width: 220px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; }
+.sidebar-btn { text-align: left; padding: 12px 16px; background: white; border: 1px solid var(--linha); border-radius: 4px; color: var(--texto-suave); font-size: 0.9rem; transition: all 0.2s; }
+.sidebar-btn:hover { border-color: var(--verde-escuro); color: var(--verde-escuro); }
+.sidebar-btn.active { background: var(--verde-escuro); color: white; border-color: var(--verde-escuro); font-weight: bold; }
+.dash-content { flex: 1; background: white; border: 1px solid var(--linha); border-radius: 4px; padding: 2rem; }
+.metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 2rem; }
+.metric-card { background: var(--fundo); padding: 1.5rem; border: 1px solid var(--linha); border-radius: 4px; text-align: center; }
+.metric-card h4 { font-size: 0.75rem; color: var(--texto-suave); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+.metric-card p { font-size: 1.4rem; color: var(--verde-escuro); font-family: Georgia, serif; font-weight: bold; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; text-align: left; margin-bottom: 1rem; }
+.data-table th, .data-table td { padding: 12px; border-bottom: 1px solid var(--linha); }
+.data-table th { color: var(--texto-suave); font-weight: normal; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; }
+.status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; display: inline-block;}
+.status-aprovado { background: #d4edda; color: #155724; }
+.status-separacao { background: #fff3cd; color: #856404; }
+.status-enviado { background: #cce5ff; color: #004085; }
+.status-cancelado { background: #f8d7da; color: #721c24; }
+.action-link { background: none; border: none; color: var(--terracota); text-decoration: underline; font-size: 0.8rem; margin-right: 10px; cursor: pointer;}
+.action-link:hover { color: var(--texto); }
+
+/* ---------- ADMIN LOGIN ---------- */
+.admin-login-wrap{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:1rem;}
+.admin-login-box{background:white; border:1px solid var(--linha); border-radius:8px; padding: 2.2rem; width:100%; max-width:360px; text-align:center; font-family: Arial, sans-serif;}
+.admin-login-box h2{font-family: Georgia, serif; margin-bottom: 1.4rem; color:var(--verde-escuro); font-size: 1.8rem;}
+.admin-error{color:var(--erro); font-size:0.82rem; margin-top:8px; min-height:16px;}
+.hint{font-size:0.72rem; color:var(--texto-suave); margin-top:14px;}
+
+/* ---------- WHATSAPP & FOOTER ---------- */
 .whatsapp-float{
   position:fixed; bottom:20px; right:20px; background:#25D366; color:white; font-size:30px;
   width:56px; height:56px; border-radius:50%; z-index:400; display:flex; align-items:center; justify-content:center;
   text-decoration:none; box-shadow: 0 3px 10px rgba(0,0,0,0.2);
 }
-
-/* ---------- FOOTER ---------- */
 .footer{background: var(--verde-escuro); color:white; text-align:center; padding: 2.2rem 1rem; margin-top: 3rem; font-family: Arial, sans-serif;}
 .footer p{font-size:0.85rem; opacity:0.85;}
 .murphy-signature{margin-top:10px; font-size:0.78rem; opacity:0.6;}
 
-/* ---------- ADMIN ---------- */
-#admin-view{display:none; min-height:100vh; background: var(--fundo); font-family: Arial, sans-serif;}
-#admin-view.show{display:block;}
-#store-view.hide{display:none;}
-.admin-login-wrap{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:1rem;}
-.admin-login-box{background:white; border:1px solid var(--linha); border-radius:8px; padding: 2.2rem; width:100%; max-width:360px; text-align:center;}
-.admin-login-box h2{font-family: Georgia, serif; margin-bottom: 1.4rem; color:var(--verde-escuro);}
-.admin-error{color:var(--erro); font-size:0.82rem; margin-top:8px; min-height:16px;}
-.hint{font-size:0.72rem; color:var(--texto-suave); margin-top:14px;}
+/* UTILS */
+.hide{display:none !important;}
 
 @media (min-width: 768px){
   .products-grid{grid-template-columns: repeat(3,1fr);}
@@ -182,6 +202,10 @@ img{display:block; max-width:100%;}
 @media (max-width: 767px){
   .form-row{flex-direction:column; gap:0;}
   .modal{padding:1.5rem 1.2rem;}
+  .dashboard-container { flex-direction: column; gap: 1rem; padding: 0 1rem; }
+  .sidebar { width: 100%; flex-direction: row; overflow-x: auto; padding-bottom: 5px; }
+  .sidebar-btn { white-space: nowrap; }
+  .data-table { display: block; overflow-x: auto; }
 }
 </style>
 </head>
@@ -194,7 +218,8 @@ img{display:block; max-width:100%;}
       <h2 style="color:var(--verde-escuro); font-style:italic">Amoá</h2>
     </div>
     <div class="header-right">
-      <a href="#" class="admin-link" onclick="abrirAdmin(event)">Login</a>
+      <a href="#" class="admin-link" onclick="abrirConta(event)">Minha Conta</a>
+      <a href="#" class="admin-link" onclick="abrirAdmin(event)">Admin</a>
       <button class="cart-container" onclick="abrirCarrinho()" aria-label="Abrir carrinho">
         <i class="ph ph-basket cart-icon"></i>
         <span id="cart-count">0</span>
@@ -243,6 +268,60 @@ img{display:block; max-width:100%;}
   </footer>
 </div>
 
+<!-- USER ACCOUNT VIEW -->
+<div id="user-view" class="hide" style="min-height: 100vh; background: var(--fundo);">
+  <header class="header">
+    <div><h2 style="color:var(--verde-escuro); font-style:italic">Amoá</h2></div>
+    <div class="header-right">
+      <a href="#" class="admin-link" onclick="fecharConta(event)">&larr; Voltar à Loja</a>
+    </div>
+  </header>
+
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <button class="sidebar-btn active">Meus Pedidos</button>
+      <button class="sidebar-btn">Catálogo de Endereços</button>
+      <button class="sidebar-btn" onclick="fecharConta(event)">Sair</button>
+    </aside>
+    
+    <main class="dash-content">
+      <h2 style="font-family: Georgia, serif; color: var(--verde-escuro); margin-bottom: 1.5rem;">Meus Pedidos</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Pedido</th>
+            <th>Data</th>
+            <th>Status</th>
+            <th>Total</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>#10029</td>
+            <td>07/09/2026</td>
+            <td><span class="status-badge status-separacao">Em Separação</span></td>
+            <td>R$ 154,90</td>
+            <td>
+              <button class="action-link" onclick="alert('Itens adicionados novamente à sua cesta!')">Replicar Pedido</button>
+              <button class="action-link" onclick="alert('Solicitação de cancelamento enviada ao atendimento.')">Cancelar</button>
+            </td>
+          </tr>
+          <tr>
+            <td>#09941</td>
+            <td>12/08/2026</td>
+            <td><span class="status-badge status-enviado">Enviado</span></td>
+            <td>R$ 65,00</td>
+            <td>
+              <button class="action-link" onclick="alert('Itens adicionados novamente à sua cesta!')">Replicar Pedido</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </main>
+  </div>
+</div>
+
 <!-- CART DRAWER -->
 <div class="overlay" id="overlay" onclick="fecharTudo()"></div>
 <aside class="drawer" id="drawer">
@@ -265,51 +344,28 @@ img{display:block; max-width:100%;}
     <h2 style="font-family:Georgia, serif; color:var(--verde-escuro); font-size:1.6rem; margin-bottom:4px;">Finalizar pedido</h2>
     <p style="color:var(--texto-suave); font-size:0.85rem; margin-bottom:20px;">Confirme seus dados para receber seu pedido.</p>
     
-    <!-- Resumo do Pedido -->
     <div class="order-summary-box" id="checkout-summary-box">
       <!-- Injetado via JS -->
     </div>
 
-    <!-- Formulário -->
     <div class="form-section-title">Dados de Contato</div>
     <div class="form-row">
-      <div class="form-group">
-        <label>Nome Completo</label>
-        <input type="text" placeholder="Seu nome">
-      </div>
-      <div class="form-group">
-        <label>WhatsApp</label>
-        <input type="text" placeholder="(00) 00000-0000">
-      </div>
+      <div class="form-group"><label>Nome Completo</label><input type="text" placeholder="Seu nome"></div>
+      <div class="form-group"><label>WhatsApp</label><input type="text" placeholder="(00) 00000-0000"></div>
     </div>
 
     <div class="form-section-title">Entrega</div>
     <div class="form-group">
       <label>Como deseja receber?</label>
-      <select>
-        <option>Entrega no endereço</option>
-        <option>Retirar na loja</option>
-      </select>
+      <select><option>Entrega no endereço</option><option>Retirar na loja</option></select>
     </div>
     <div class="form-row">
-      <div class="form-group" style="flex:2">
-        <label>Endereço</label>
-        <input type="text" placeholder="Rua, número">
-      </div>
-      <div class="form-group" style="flex:1">
-        <label>Bairro</label>
-        <input type="text" placeholder="Bairro">
-      </div>
+      <div class="form-group" style="flex:2"><label>Endereço</label><input type="text" placeholder="Rua, número"></div>
+      <div class="form-group" style="flex:1"><label>Bairro</label><input type="text" placeholder="Bairro"></div>
     </div>
     <div class="form-row">
-      <div class="form-group">
-        <label>Cidade</label>
-        <input type="text" placeholder="Cidade">
-      </div>
-      <div class="form-group">
-        <label>CEP</label>
-        <input type="text" placeholder="00000-000">
-      </div>
+      <div class="form-group"><label>Cidade</label><input type="text" placeholder="Cidade"></div>
+      <div class="form-group"><label>CEP</label><input type="text" placeholder="00000-000"></div>
     </div>
 
     <div class="form-section-title">Pagamento</div>
@@ -320,9 +376,7 @@ img{display:block; max-width:100%;}
     </div>
 
     <div class="form-section-title">Observações (Opcional)</div>
-    <div class="form-group">
-      <textarea placeholder="Ex: ponto de referência, troco para..." rows="2"></textarea>
-    </div>
+    <div class="form-group"><textarea placeholder="Ex: ponto de referência, troco para..." rows="2"></textarea></div>
 
     <div class="modal-actions">
       <button class="btn-secondary" onclick="fecharCheckout()">Voltar</button>
@@ -332,7 +386,9 @@ img{display:block; max-width:100%;}
 </div>
 
 <!-- ADMIN VIEW -->
-<div id="admin-view">
+<div id="admin-view" class="hide" style="min-height:100vh; background: var(--fundo);">
+  
+  <!-- LOGIN SECTION -->
   <div class="admin-login-wrap" id="admin-login-wrap">
     <div class="admin-login-box">
       <h2>Amoá Admin</h2>
@@ -349,6 +405,108 @@ img{display:block; max-width:100%;}
       <div class="hint"><a href="#" onclick="fecharAdmin(event)" style="color:inherit; text-decoration:none;">&larr; Voltar para a loja</a></div>
     </div>
   </div>
+
+  <!-- DASHBOARD SECTION -->
+  <div id="admin-dashboard-view" class="hide">
+    <header class="header">
+      <div><h2 style="color:var(--verde-escuro); font-style:italic">Amoá Admin</h2></div>
+      <div class="header-right"><button class="btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="sairAdmin()">Sair do Sistema</button></div>
+    </header>
+
+    <div class="dashboard-container">
+      <aside class="sidebar">
+        <button class="sidebar-btn active" onclick="mudarAbaAdmin('metrics', this)">Dashboard</button>
+        <button class="sidebar-btn" onclick="mudarAbaAdmin('orders', this)">Gestão de Pedidos</button>
+        <button class="sidebar-btn" onclick="mudarAbaAdmin('products', this)">Produtos & Estoque</button>
+        <button class="sidebar-btn" onclick="mudarAbaAdmin('marketing', this)">Banners & Marketing</button>
+      </aside>
+      
+      <main class="dash-content">
+        <!-- Tab: Metrics -->
+        <div id="tab-metrics">
+          <h2 style="font-family: Georgia, serif; color: var(--verde-escuro); margin-bottom: 1.5rem;">Visão Geral de Vendas</h2>
+          <div class="metrics-grid">
+            <div class="metric-card"><h4>Faturamento (Mês)</h4><p>R$ 4.250,00</p></div>
+            <div class="metric-card"><h4>Ticket Médio</h4><p>R$ 115,00</p></div>
+            <div class="metric-card"><h4>Custo de Fretes</h4><p>R$ 380,00</p></div>
+            <div class="metric-card"><h4>Taxa de Cancelamento</h4><p>2.5%</p></div>
+          </div>
+          <div style="padding: 1.5rem; background: var(--fundo); border: 1px solid var(--linha); border-radius: 4px;">
+            <h4 style="font-size: 0.85rem; color: var(--texto-suave); text-transform: uppercase; margin-bottom: 10px;">Últimas Localizações de Entrega</h4>
+            <p style="font-size: 0.9rem; font-family: Arial, sans-serif;">📍 São Paulo/SP, 📍 Campinas/SP, 📍 Rio de Janeiro/RJ</p>
+          </div>
+        </div>
+
+        <!-- Tab: Orders -->
+        <div id="tab-orders" class="hide">
+          <h2 style="font-family: Georgia, serif; color: var(--verde-escuro); margin-bottom: 1.5rem;">Gestão de Pedidos</h2>
+          <table class="data-table">
+            <thead>
+              <tr><th>Pedido</th><th>Cliente</th><th>Total</th><th>Status</th><th>Ações</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>#10029</td>
+                <td>Maria S.</td>
+                <td>R$ 154,90</td>
+                <td>
+                  <select style="padding: 4px; font-size: 0.8rem; border: 1px solid var(--linha); border-radius: 4px;">
+                    <option>Aprovado</option>
+                    <option selected>Em Separação</option>
+                    <option>Enviado</option>
+                    <option>Cancelado</option>
+                  </select>
+                </td>
+                <td><button class="action-link" onclick="alert('Status atualizado e cliente notificado!')">Salvar</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Tab: Products -->
+        <div id="tab-products" class="hide">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
+            <h2 style="font-family: Georgia, serif; color: var(--verde-escuro);">Produtos & Estoque</h2>
+            <button class="btn-primary" style="padding: 8px 16px; font-size: 0.85rem;">+ Novo Produto</button>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr><th>Produto</th><th>Categoria</th><th>Estoque</th><th>Preço</th><th>Ações</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Home Spray Lavanda</td>
+                <td>Home Spray</td>
+                <td><span style="color: var(--verde-escuro); font-weight:bold;">12 un.</span></td>
+                <td>R$ 65,00</td>
+                <td>
+                  <button class="action-link">Editar</button>
+                  <button class="action-link" style="color: var(--erro);">Ocultar</button>
+                </td>
+              </tr>
+              <tr>
+                <td>Kit Spa em Casa</td>
+                <td>Kits</td>
+                <td><span style="color: var(--erro); font-weight:bold;">2 un. (Alerta)</span></td>
+                <td>R$ 89,90</td>
+                <td><button class="action-link">Editar</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Tab: Marketing -->
+        <div id="tab-marketing" class="hide">
+          <h2 style="font-family: Georgia, serif; color: var(--verde-escuro); margin-bottom: 1.5rem;">Banners da Vitrine</h2>
+          <div style="padding: 1.5rem; border: 1px dashed var(--linha); text-align: center; border-radius: 4px; color: var(--texto-suave); font-family: Arial, sans-serif;">
+            <p style="margin-bottom: 10px;">Arraste uma imagem aqui para criar um novo banner rotativo.</p>
+            <button class="btn-secondary" style="font-size: 0.85rem;">Selecionar Arquivo</button>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -356,7 +514,7 @@ img{display:block; max-width:100%;}
   const SUPABASE_URL = 'https://stiqoqwdhrdydokjhwcn.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0aXFvcXdkaHJkeWRva2pod2NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NDk3ODksImV4cCI6MjEwNDIyNTc4OX0.nbT9KDHFFBa_X_0392ywPZzHth5QrWtycYWHi2prnx4';
   
-  // Conexão Ativada com Nomenclatura Corrigida
+  // Conexão Ativada
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   let carrinho = [];
@@ -435,7 +593,6 @@ img{display:block; max-width:100%;}
     let html = '';
     let total = 0;
 
-    // Agrupar itens iguais para visualização limpa no resumo
     let agrupado = carrinho.reduce((acc, item) => {
       acc[item.nome] = acc[item.nome] || { preco: item.preco, qtd: 0 };
       acc[item.nome].qtd += 1;
@@ -451,7 +608,6 @@ img{display:block; max-width:100%;}
     
     html += `<div class="summary-total"><span>Total</span><span>${formatarMoeda(total)}</span></div>`;
     summaryBox.innerHTML = html;
-
     document.getElementById('checkout-overlay').classList.add('show');
   }
 
@@ -464,16 +620,33 @@ img{display:block; max-width:100%;}
     btn.classList.add('active');
   }
 
-  // Lógica Administrativa e Autenticação
+  // LÓGICA DE NAVEGAÇÃO: CONTA DO USUÁRIO
+  function abrirConta(e) {
+    e.preventDefault();
+    document.getElementById('store-view').classList.add('hide');
+    document.getElementById('admin-view').classList.add('hide');
+    document.getElementById('user-view').classList.remove('hide');
+  }
+
+  function fecharConta(e) {
+    if(e) e.preventDefault();
+    document.getElementById('user-view').classList.add('hide');
+    document.getElementById('store-view').classList.remove('hide');
+  }
+
+  // LÓGICA DE NAVEGAÇÃO: ADMIN E AUTENTICAÇÃO
   function abrirAdmin(e) {
     e.preventDefault();
     document.getElementById('store-view').classList.add('hide');
-    document.getElementById('admin-view').classList.add('show');
+    document.getElementById('user-view').classList.add('hide');
+    document.getElementById('admin-view').classList.remove('hide');
+    document.getElementById('admin-login-wrap').classList.remove('hide');
+    document.getElementById('admin-dashboard-view').classList.add('hide');
   }
 
   function fecharAdmin(e) {
     e.preventDefault();
-    document.getElementById('admin-view').classList.remove('show');
+    document.getElementById('admin-view').classList.add('hide');
     document.getElementById('store-view').classList.remove('hide');
   }
 
@@ -489,10 +662,8 @@ img{display:block; max-width:100%;}
 
     errorDiv.innerText = "Autenticando no banco de dados...";
 
-    // 1. Tenta o login na Autenticação do Supabase usando supabaseClient
     const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
-      email: email,
-      password: pass
+      email: email, password: pass
     });
 
     if (authError) {
@@ -500,12 +671,8 @@ img{display:block; max-width:100%;}
       return;
     }
 
-    // 2. Verifica se o usuário logado tem permissão de superadmin na tabela profiles usando supabaseClient
     const { data: profileData, error: profileError } = await supabaseClient
-      .from('profiles')
-      .select('role')
-      .eq('id', authData.user.id)
-      .single();
+      .from('profiles').select('role').eq('id', authData.user.id).single();
 
     if (profileError || profileData.role !== 'superadmin') {
       errorDiv.innerText = "Acesso negado. Sua conta não tem permissão de administrador.";
@@ -513,20 +680,34 @@ img{display:block; max-width:100%;}
       return;
     }
 
-    // 3. Sucesso total: Limpa o erro e abre o painel
     errorDiv.innerText = "";
-    acessarPainel();
+    document.getElementById('admin-login-wrap').classList.add('hide');
+    document.getElementById('admin-dashboard-view').classList.remove('hide');
   }
 
-  function acessarPainel() {
-    // Renderiza uma tela temporária de sucesso dentro da caixa de login
-    document.getElementById('admin-login-wrap').innerHTML = `
-      <div class="admin-login-box" style="max-width: 600px;">
-        <h2 style="color:var(--verde-escuro); font-style:italic">Painel Administrativo</h2>
-        <p style="color:var(--texto-suave); margin-bottom: 20px;">Bem-vindo, Administrador! Suas credenciais foram validadas com sucesso.</p>
-        <button class="btn-secondary" onclick="location.reload()">Sair do Sistema</button>
-      </div>
-    `;
+  function sairAdmin() {
+    supabaseClient.auth.signOut();
+    document.getElementById('admin-dashboard-view').classList.add('hide');
+    document.getElementById('store-view').classList.remove('hide');
+    document.getElementById('admin-view').classList.add('hide');
+    document.getElementById('admin-email').value = '';
+    document.getElementById('admin-pw').value = '';
+  }
+
+  function mudarAbaAdmin(abaId, btnElement) {
+    // Esconde todas as abas
+    document.getElementById('tab-metrics').classList.add('hide');
+    document.getElementById('tab-orders').classList.add('hide');
+    document.getElementById('tab-products').classList.add('hide');
+    document.getElementById('tab-marketing').classList.add('hide');
+    
+    // Remove classe active de todos os botões da sidebar admin
+    const botoes = btnElement.parentElement.querySelectorAll('.sidebar-btn');
+    botoes.forEach(b => b.classList.remove('active'));
+
+    // Mostra a aba selecionada e ativa o botão
+    document.getElementById('tab-' + abaId).classList.remove('hide');
+    btnElement.classList.add('active');
   }
 </script>
 </body>
