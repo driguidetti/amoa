@@ -356,8 +356,8 @@ img{display:block; max-width:100%;}
   const SUPABASE_URL = 'https://stiqoqwdhrdydokjhwcn.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0aXFvcXdkaHJkeWRva2pod2NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NDk3ODksImV4cCI6MjEwNDIyNTc4OX0.nbT9KDHFFBa_X_0392ywPZzHth5QrWtycYWHi2prnx4';
   
-  // Conexão Ativada
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // Conexão Ativada com Nomenclatura Corrigida
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   let carrinho = [];
 
@@ -489,8 +489,8 @@ img{display:block; max-width:100%;}
 
     errorDiv.innerText = "Autenticando no banco de dados...";
 
-    // 1. Tenta o login na Autenticação do Supabase
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+    // 1. Tenta o login na Autenticação do Supabase usando supabaseClient
+    const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
       email: email,
       password: pass
     });
@@ -500,8 +500,8 @@ img{display:block; max-width:100%;}
       return;
     }
 
-    // 2. Verifica se o usuário logado tem permissão de superadmin na tabela profiles
-    const { data: profileData, error: profileError } = await supabase
+    // 2. Verifica se o usuário logado tem permissão de superadmin na tabela profiles usando supabaseClient
+    const { data: profileData, error: profileError } = await supabaseClient
       .from('profiles')
       .select('role')
       .eq('id', authData.user.id)
@@ -509,7 +509,7 @@ img{display:block; max-width:100%;}
 
     if (profileError || profileData.role !== 'superadmin') {
       errorDiv.innerText = "Acesso negado. Sua conta não tem permissão de administrador.";
-      await supabase.auth.signOut();
+      await supabaseClient.auth.signOut();
       return;
     }
 
