@@ -139,6 +139,8 @@ img{display:block; max-width:100%;}
 .btn-primary{flex:2; background: var(--verde-escuro); color:white; border:none; padding:12px; border-radius:4px; font-size:0.95rem; cursor:pointer; text-align:center;}
 .btn-primary:disabled{background:var(--linha); cursor:not-allowed;}
 .auth-hint { font-size: 0.8rem; color: var(--texto-suave); margin-bottom: 10px; display: block; }
+.pw-wrap { position: relative; }
+.pw-toggle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--texto-suave); font-size: 1.1rem; cursor: pointer; }
 
 /* PANELS (USER & ADMIN) */
 .dashboard-container { max-width: 1180px; margin: 2rem auto; padding: 0 1.5rem; display: flex; gap: 2rem; font-family: Arial, sans-serif;}
@@ -227,6 +229,7 @@ img{display:block; max-width:100%;}
       <div class="form-group" style="text-align: left;">
         <label>Qual é o seu e-mail?</label>
         <input type="email" id="auth-email-input" required placeholder="seu@email.com">
+        <p id="auth-error-step1" style="color:var(--erro); font-size:0.8rem; margin-top:5px;"></p>
       </div>
       <button type="submit" id="btn-check-email" class="btn-primary" style="width:100%">Continuar</button>
       <button type="button" class="btn-secondary" style="width:100%; border:none; margin-top:5px;" onclick="fecharAuth()">Cancelar</button>
@@ -234,22 +237,37 @@ img{display:block; max-width:100%;}
 
     <!-- PASSO 2: LOGIN -->
     <form id="auth-step-login" class="hide" onsubmit="realizarLogin(event)">
-      <p class="auth-hint">E-mail: <strong id="display-email-login"></strong></p>
+      <div class="form-group" style="text-align: left;">
+        <label>E-mail Cadastrado</label>
+        <input type="email" id="login-email-edit" required>
+      </div>
       <div class="form-group" style="text-align: left;">
         <label>Senha</label>
-        <input type="password" id="auth-pw-login" required minlength="6">
+        <div class="pw-wrap">
+          <input type="password" id="auth-pw-login" required minlength="6" style="padding-right: 40px;">
+          <button type="button" class="pw-toggle" onclick="togglePw('auth-pw-login', this)"><i class="ph ph-eye"></i></button>
+        </div>
       </div>
       <p id="auth-error-login" style="color:var(--erro); font-size:0.8rem; margin-bottom:10px; min-height: 16px;"></p>
-      <button type="submit" class="btn-primary" style="width:100%">Entrar</button>
+      <button type="submit" class="btn-primary" style="width:100%">Entrar na Conta</button>
       <button type="button" class="btn-secondary" style="width:100%; border:none; margin-top:5px;" onclick="voltarParaEmail()">Voltar</button>
     </form>
 
-    <!-- PASSO 3: CADASTRO (Novo Usuário) -->
+    <!-- PASSO 3: CADASTRO -->
     <form id="auth-step-register" class="hide" onsubmit="realizarCadastro(event)">
-      <p class="auth-hint">Criando conta para: <strong id="display-email-register"></strong></p>
+      <div class="form-group" style="text-align: left;">
+        <label>E-mail (Nova Conta)</label>
+        <input type="email" id="reg-email-edit" required>
+      </div>
       <div class="form-group" style="text-align: left;"><label>Nome Completo *</label><input type="text" id="reg-nome" required></div>
-      <div class="form-group" style="text-align: left;"><label>Telefone / WhatsApp *</label><input type="text" id="reg-tel" required></div>
-      <div class="form-group" style="text-align: left;"><label>Crie uma Senha (Mínimo 6 dígitos) *</label><input type="password" id="reg-pw" required minlength="6"></div>
+      <div class="form-group" style="text-align: left;"><label>WhatsApp *</label><input type="text" id="reg-tel" required placeholder="(00) 00000-0000" oninput="maskPhone(event)" maxlength="15"></div>
+      <div class="form-group" style="text-align: left;">
+        <label>Crie uma Senha (Mínimo 6 dígitos) *</label>
+        <div class="pw-wrap">
+          <input type="password" id="reg-pw" required minlength="6" style="padding-right: 40px;">
+          <button type="button" class="pw-toggle" onclick="togglePw('reg-pw', this)"><i class="ph ph-eye"></i></button>
+        </div>
+      </div>
       <p id="auth-error-register" style="color:var(--erro); font-size:0.8rem; margin-bottom:10px; min-height: 16px;"></p>
       <button type="submit" class="btn-primary" style="width:100%">Finalizar Cadastro</button>
       <button type="button" class="btn-secondary" style="width:100%; border:none; margin-top:5px;" onclick="voltarParaEmail()">Voltar</button>
@@ -257,7 +275,7 @@ img{display:block; max-width:100%;}
   </div>
 </div>
 
-<!-- CHECKOUT MODAL (Requires Auth) -->
+<!-- CHECKOUT MODAL -->
 <div class="modal-overlay" id="checkout-overlay">
   <div class="modal">
     <h2>Finalizar pedido</h2>
@@ -331,7 +349,6 @@ img{display:block; max-width:100%;}
       <button class="sidebar-btn" onclick="mudarAbaAdmin('products', this)">Produtos & Vitrine</button>
     </aside>
     <main class="dash-content">
-      <!-- MÉTTRICAS -->
       <div id="admin-tab-metrics">
         <h2 style="font-family: Georgia, serif; color: var(--verde-escuro); margin-bottom: 1.5rem;">Visão Geral (Sincronizado)</h2>
         <div class="metrics-grid">
@@ -341,7 +358,6 @@ img{display:block; max-width:100%;}
           <div class="metric-card"><h4>Cancelados</h4><p id="metric-canc">0</p></div>
         </div>
       </div>
-      <!-- PEDIDOS -->
       <div id="admin-tab-orders" class="hide">
         <h2 style="font-family: Georgia, serif; color: var(--verde-escuro); margin-bottom: 1.5rem;">Gestão de Pedidos</h2>
         <table class="data-table">
@@ -349,7 +365,6 @@ img{display:block; max-width:100%;}
           <tbody id="admin-orders-table"></tbody>
         </table>
       </div>
-      <!-- PRODUTOS -->
       <div id="admin-tab-products" class="hide">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
           <h2 style="font-family: Georgia, serif; color: var(--verde-escuro);">Vitrine</h2>
@@ -364,7 +379,7 @@ img{display:block; max-width:100%;}
   </div>
 </div>
 
-<!-- PRODUCT MODAL (ADMIN) -->
+<!-- PRODUCT MODAL -->
 <div class="modal-overlay" id="product-modal">
   <div class="modal">
     <h2>Cadastrar Produto</h2>
@@ -390,12 +405,11 @@ img{display:block; max-width:100%;}
 </div>
 
 <script>
-  // Chaves Reais Supabase
+  // Chaves Supabase
   const SUPABASE_URL = 'https://stiqoqwdhrdydokjhwcn.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0aXFvcXdkaHJkeWRva2pod2NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NDk3ODksImV4cCI6MjEwNDIyNTc4OX0.nbT9KDHFFBa_X_0392ywPZzHth5QrWtycYWHi2prnx4';
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // ESTADO GLOBAL (MOCK DE DADOS PARA UI - Transações simuladas)
   let userLogged = null; 
   let carrinho = [];
   let dbOrders = [];
@@ -404,22 +418,40 @@ img{display:block; max-width:100%;}
     { id: 2, nome: "Home Spray Lavanda", categoria: "Home Spray", preco: 65.00, img: "ph-wind" }
   ];
 
-  // UTILIDADES
   const formatarMoeda = (valor) => valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const gerarId = () => Math.floor(Math.random() * 90000) + 10000;
-
-  // INIT
+  
   renderizarVitrine();
 
-  // ----- AUTENTICAÇÃO COM SUPABASE -----
-  function abrirAuth() { 
-    document.getElementById('auth-overlay').classList.add('show'); 
-    voltarParaEmail(); 
+  // ----- MÁSCARAS E VALIDAÇÕES -----
+  function maskPhone(event) {
+    let v = event.target.value.replace(/\D/g, '');
+    if (v.length > 11) v = v.slice(0, 11);
+    if (v.length > 2) v = v.replace(/^(\d{2})(\d)/g, '($1) $2');
+    if (v.length > 7) v = v.replace(/(\d)(\d{4})$/, '$1-$2');
+    event.target.value = v;
   }
-  
-  function fecharAuth() { 
-    document.getElementById('auth-overlay').classList.remove('show'); 
+
+  function validarEmailDominio(email) {
+    const regex = /^[^\s@]+@(gmail\.com|hotmail\.com|outlook\.com|yahoo\.com|icloud\.com|live\.com|[^\s@]+\.com(\.br)?)$/i;
+    return regex.test(email);
   }
+
+  function togglePw(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const icon = btn.querySelector('i');
+    if(input.type === 'password') {
+      input.type = 'text';
+      icon.classList.replace('ph-eye', 'ph-eye-slash');
+    } else {
+      input.type = 'password';
+      icon.classList.replace('ph-eye-slash', 'ph-eye');
+    }
+  }
+
+  // ----- AUTENTICAÇÃO -----
+  function abrirAuth() { document.getElementById('auth-overlay').classList.add('show'); voltarParaEmail(); }
+  function fecharAuth() { document.getElementById('auth-overlay').classList.remove('show'); }
 
   function voltarParaEmail() {
     document.getElementById('auth-step-1').classList.remove('hide');
@@ -428,65 +460,62 @@ img{display:block; max-width:100%;}
     document.getElementById('auth-email-input').value = "";
     document.getElementById('auth-pw-login').value = "";
     document.getElementById('reg-pw').value = "";
+    document.getElementById('reg-tel').value = "";
+    document.getElementById('auth-error-step1').innerText = "";
     document.getElementById('auth-error-login').innerText = "";
     document.getElementById('auth-error-register').innerText = "";
     document.getElementById('btn-check-email').innerText = "Continuar";
   }
 
-  // Verifica no Banco de Dados se o e-mail já existe
   async function avancarParaSenha(e) {
     e.preventDefault();
     const email = document.getElementById('auth-email-input').value;
+    const errorDiv = document.getElementById('auth-error-step1');
     const btn = document.getElementById('btn-check-email');
+    
+    if(!validarEmailDominio(email)) {
+      errorDiv.innerText = "Por favor, insira um provedor de e-mail válido (ex: gmail.com, outlook.com).";
+      return;
+    }
+    
+    errorDiv.innerText = "";
     btn.innerText = "Verificando...";
 
-    document.getElementById('display-email-login').innerText = email;
-    document.getElementById('display-email-register').innerText = email;
-    
-    // Consulta a tabela de perfis buscando o e-mail inserido. 
-    // Nota: É necessário que haja uma política RLS no Supabase permitindo leitura pública por e-mail ou lidar com a tentativa de login.
-    const { data, error } = await supabaseClient
-      .from('profiles')
-      .select('email')
-      .eq('email', email)
-      .maybeSingle();
+    // Usando a nova função RPC segura no Supabase para burlar o bloqueio de RLS
+    const { data: userExists, error } = await supabaseClient.rpc('check_profile_exists', { lookup_email: email });
 
     document.getElementById('auth-step-1').classList.add('hide');
 
-    if (data) {
-      // Usuário existe no banco -> Leva para Login
+    if (userExists) {
       document.getElementById('auth-step-login').classList.remove('hide');
+      document.getElementById('login-email-edit').value = email;
     } else {
-      // Usuário NÃO existe no banco -> Leva para Cadastro Obrigatório
       document.getElementById('auth-step-register').classList.remove('hide');
+      document.getElementById('reg-email-edit').value = email;
     }
     btn.innerText = "Continuar";
   }
 
-  // Realiza Login Real no Supabase
   async function realizarLogin(e) {
     e.preventDefault();
-    const email = document.getElementById('display-email-login').innerText;
+    const email = document.getElementById('login-email-edit').value;
     const pw = document.getElementById('auth-pw-login').value;
     const errorDiv = document.getElementById('auth-error-login');
 
+    if(!validarEmailDominio(email)) { errorDiv.innerText = "E-mail inválido."; return; }
     errorDiv.innerText = "Autenticando...";
 
-    const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
-      email: email, password: pw
-    });
+    const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({ email, password: pw });
 
     if (authError) {
       errorDiv.innerText = "Senha incorreta. Verifique suas credenciais.";
       return;
     }
 
-    // Busca a Role no Profile
     const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', authData.user.id).single();
 
     userLogged = {
-      id: authData.user.id,
-      email: authData.user.email,
+      id: authData.user.id, email: authData.user.email,
       role: profile ? profile.role : 'client',
       nome: profile ? profile.nome : email.split('@')[0]
     };
@@ -497,37 +526,29 @@ img{display:block; max-width:100%;}
     redirecionarAposLogin();
   }
 
-  // Cria Conta Real no Supabase e força a Role 'client'
   async function realizarCadastro(e) {
     e.preventDefault();
-    const email = document.getElementById('display-email-register').innerText;
+    const email = document.getElementById('reg-email-edit').value;
     const pw = document.getElementById('reg-pw').value;
     const nome = document.getElementById('reg-nome').value;
     const tel = document.getElementById('reg-tel').value;
     const errorDiv = document.getElementById('auth-error-register');
 
+    if(!validarEmailDominio(email)) { errorDiv.innerText = "E-mail inválido."; return; }
+    if(tel.length < 14) { errorDiv.innerText = "Insira um número de telefone completo."; return; }
+    
     errorDiv.innerText = "Criando conta segura...";
 
     const { data, error } = await supabaseClient.auth.signUp({
-      email: email,
-      password: pw,
-      options: {
-        data: { nome: nome, telefone: tel } 
-      }
+      email, password: pw, options: { data: { nome, telefone: tel } }
     });
 
-    if (error) {
-      errorDiv.innerText = "Erro ao criar conta: " + error.message;
-      return;
-    }
+    if (error) { errorDiv.innerText = "Erro ao criar conta: " + error.message; return; }
 
     if (data.user) {
-      // Insere/Garante a criação do profile forçando o papel 'client' 
-      // (Isso assegura que todos os novos cadastros sejam apenas clientes, caso o trigger do banco falhe)
       await supabaseClient.from('profiles').upsert([
         { id: data.user.id, email: email, nome: nome, role: 'client' }
       ]);
-
       userLogged = { id: data.user.id, email: email, role: 'client', nome: nome };
       fecharAuth();
       atualizarHeader();
@@ -567,14 +588,8 @@ img{display:block; max-width:100%;}
     atualizarHeader();
   }
 
-  // ----- CARRINHO & CHECKOUT -----
-  function adicionarAoCarrinho(id) {
-    const prod = dbProducts.find(p => p.id === id);
-    if(prod) carrinho.push(prod);
-    atualizarCarrinho();
-    abrirCarrinho();
-  }
-
+  // ----- CARRINHO E DEMAIS FUNÇÕES -----
+  function adicionarAoCarrinho(id) { const prod = dbProducts.find(p => p.id === id); if(prod) carrinho.push(prod); atualizarCarrinho(); abrirCarrinho(); }
   function removerDoCarrinho(index) { carrinho.splice(index, 1); atualizarCarrinho(); }
   function abrirCarrinho() { document.getElementById('overlay').classList.add('show'); document.getElementById('drawer').classList.add('show'); }
   function fecharCarrinho() { document.getElementById('drawer').classList.remove('show'); document.getElementById('overlay').classList.remove('show'); }
@@ -585,8 +600,7 @@ img{display:block; max-width:100%;}
     document.getElementById('cart-count').innerText = carrinho.length;
     if(carrinho.length === 0) {
       tbody.innerHTML = '<div style="text-align:center; padding: 20px; color:var(--texto-suave);">Cesta vazia.</div>';
-      document.getElementById('cart-total').innerText = 'R$ 0,00';
-      return;
+      document.getElementById('cart-total').innerText = 'R$ 0,00'; return;
     }
     let html = '', total = 0;
     carrinho.forEach((item, i) => {
@@ -600,12 +614,8 @@ img{display:block; max-width:100%;}
   function iniciarCheckout() {
     if(carrinho.length === 0) return alert("Cesta vazia!");
     fecharCarrinho();
-    if(!userLogged) {
-      document.getElementById('checkout-overlay').classList.add('pending-auth');
-      abrirAuth();
-    } else {
-      abrirCheckout();
-    }
+    if(!userLogged) { document.getElementById('checkout-overlay').classList.add('pending-auth'); abrirAuth(); } 
+    else { abrirCheckout(); }
   }
 
   function abrirCheckout() { document.getElementById('checkout-overlay').classList.add('show'); }
@@ -613,131 +623,53 @@ img{display:block; max-width:100%;}
   function processarCheckout(e) {
     e.preventDefault(); 
     const total = carrinho.reduce((acc, curr) => acc + curr.preco, 0);
-    const freteSimulado = 15.00; 
-    
-    dbOrders.push({
-      id: gerarId(),
-      cliente: userLogged.email, // Vinculação forte com a conta do usuário
-      total: total + freteSimulado,
-      frete: freteSimulado,
-      itens: carrinho.length,
-      status: 'Aprovado'
-    });
-
-    carrinho = []; 
-    atualizarCarrinho();
-    fecharTudo();
-    alert("Pedido finalizado com sucesso!");
-    document.getElementById('header-auth-btn').click(); 
+    const frete = 15.00; 
+    dbOrders.push({ id: gerarId(), cliente: userLogged.email, total: total + frete, frete, itens: carrinho.length, status: 'Aprovado' });
+    carrinho = []; atualizarCarrinho(); fecharTudo(); alert("Pedido finalizado com sucesso!"); document.getElementById('header-auth-btn').click(); 
   }
 
-  // ----- VITRINE & PRODUTOS -----
   function renderizarVitrine() {
-    const grid = document.getElementById('public-products-grid');
-    grid.innerHTML = dbProducts.map(p => `
+    document.getElementById('public-products-grid').innerHTML = dbProducts.map(p => `
       <div class="product-card">
         <div class="product-image"><i class="ph-thin ${p.img || 'ph-package'}"></i></div>
-        <div class="product-body">
-          <p class="product-cat">${p.categoria}</p>
-          <h3 style="color:var(--verde-escuro)">${p.nome}</h3>
-          <p class="product-price">${formatarMoeda(p.preco)}</p>
-        </div>
+        <div class="product-body"><p class="product-cat">${p.categoria}</p><h3 style="color:var(--verde-escuro)">${p.nome}</h3><p class="product-price">${formatarMoeda(p.preco)}</p></div>
         <div class="product-footer"><button class="add-btn" onclick="adicionarAoCarrinho(${p.id})">Adicionar</button></div>
       </div>
     `).join('');
   }
 
-  // ----- ADMIN PANEL -----
   function sincronizarAdmin() {
     let fat = 0, frete = 0, canc = 0;
-    dbOrders.forEach(o => { 
-      if(o.status !== 'Cancelado') { fat += o.total; frete += o.frete; }
-      else canc++; 
-    });
+    dbOrders.forEach(o => { if(o.status !== 'Cancelado') { fat += o.total; frete += o.frete; } else canc++; });
     document.getElementById('metric-fat').innerText = formatarMoeda(fat);
     document.getElementById('metric-tkt').innerText = dbOrders.length ? formatarMoeda(fat / (dbOrders.length - canc)) : 'R$ 0,00';
     document.getElementById('metric-frete').innerText = formatarMoeda(frete);
     document.getElementById('metric-canc').innerText = canc;
-
     document.getElementById('admin-orders-table').innerHTML = dbOrders.map(o => `
       <tr><td>#${o.id}</td><td>${o.cliente.split('@')[0]}</td><td>${formatarMoeda(o.total)}</td><td>${formatarMoeda(o.frete)}</td>
-      <td>
-        <select onchange="mudarStatusAdmin(${o.id}, this.value)" style="padding:4px; border-radius:4px;">
-          <option ${o.status==='Aprovado'?'selected':''}>Aprovado</option>
-          <option ${o.status==='Em Separação'?'selected':''}>Em Separação</option>
-          <option ${o.status==='Enviado'?'selected':''}>Enviado</option>
-          <option ${o.status==='Cancelado'?'selected':''}>Cancelado</option>
-        </select>
-      </td></tr>
-    `).join('') || '<tr><td colspan="5">Nenhum pedido no sistema.</td></tr>';
-
+      <td><select onchange="mudarStatusAdmin(${o.id}, this.value)" style="padding:4px; border-radius:4px;">
+        <option ${o.status==='Aprovado'?'selected':''}>Aprovado</option><option ${o.status==='Em Separação'?'selected':''}>Em Separação</option>
+        <option ${o.status==='Enviado'?'selected':''}>Enviado</option><option ${o.status==='Cancelado'?'selected':''}>Cancelado</option>
+      </select></td></tr>`).join('') || '<tr><td colspan="5">Nenhum pedido no sistema.</td></tr>';
     document.getElementById('admin-products-table').innerHTML = dbProducts.map(p => `
       <tr><td>${p.nome}</td><td>${p.categoria}</td><td>${formatarMoeda(p.preco)}</td>
-      <td><button class="action-link" onclick="alert('Função de edição em desenvolvimento.')">Editar</button>
-      <button class="action-link" style="color:var(--erro)" onclick="ocultarProduto(${p.id})">Ocultar</button></td></tr>
-    `).join('');
+      <td><button class="action-link" style="color:var(--erro)" onclick="ocultarProduto(${p.id})">Ocultar</button></td></tr>`).join('');
   }
 
-  function mudarStatusAdmin(id, novoStatus) {
-    const pedido = dbOrders.find(o => o.id === id);
-    if(pedido) pedido.status = novoStatus;
-    sincronizarAdmin();
-  }
-
-  function mudarAbaAdmin(aba, btn) {
-    document.querySelectorAll('#admin-view .dash-content > div').forEach(d => d.classList.add('hide'));
-    document.getElementById('admin-tab-' + aba).classList.remove('hide');
-    document.querySelectorAll('#admin-view .sidebar-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-  }
-
+  function mudarStatusAdmin(id, novoStatus) { const pedido = dbOrders.find(o => o.id === id); if(pedido) pedido.status = novoStatus; sincronizarAdmin(); }
+  function mudarAbaAdmin(aba, btn) { document.querySelectorAll('#admin-view .dash-content > div').forEach(d => d.classList.add('hide')); document.getElementById('admin-tab-' + aba).classList.remove('hide'); document.querySelectorAll('#admin-view .sidebar-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
   function abrirModalProduto() { document.getElementById('product-modal').classList.add('show'); document.getElementById('product-form').reset(); }
-  function salvarProduto(e) {
-    e.preventDefault();
-    dbProducts.push({
-      id: gerarId(),
-      nome: document.getElementById('prod-nome').value,
-      categoria: document.getElementById('prod-cat').value,
-      preco: parseFloat(document.getElementById('prod-preco').value),
-      img: 'ph-sparkle'
-    });
-    fecharTudo();
-    sincronizarAdmin();
-    renderizarVitrine();
-  }
+  function salvarProduto(e) { e.preventDefault(); dbProducts.push({ id: gerarId(), nome: document.getElementById('prod-nome').value, categoria: document.getElementById('prod-cat').value, preco: parseFloat(document.getElementById('prod-preco').value), img: 'ph-sparkle' }); fecharTudo(); sincronizarAdmin(); renderizarVitrine(); }
   function ocultarProduto(id) { dbProducts = dbProducts.filter(p => p.id !== id); sincronizarAdmin(); renderizarVitrine(); }
-
-  // ----- USER PANEL -----
   function renderizarUserPainel() {
-    // Traz apenas os pedidos vinculados ao email do usuário logado (filtro rigoroso de conta)
     const meusPedidos = dbOrders.filter(o => o.cliente === userLogged.email);
     document.getElementById('user-orders-table').innerHTML = meusPedidos.map(o => `
-      <tr><td>#${o.id}</td><td>${o.itens} unid.</td>
-      <td><span class="status-badge" style="background:#e2e3e5; color:#383d41;">${o.status}</span></td>
-      <td>${formatarMoeda(o.total)}</td>
-      <td>
-        <button class="action-link" onclick="replicarPedido()">Replicar</button>
-        ${o.status !== 'Cancelado' ? `<button class="action-link" style="color:var(--erro);" onclick="solicitarCancelamento(${o.id})">Cancelar</button>` : ''}
-      </td></tr>
+      <tr><td>#${o.id}</td><td>${o.itens} unid.</td><td><span class="status-badge" style="background:#e2e3e5; color:#383d41;">${o.status}</span></td>
+      <td>${formatarMoeda(o.total)}</td><td><button class="action-link" onclick="alert('Funcionalidade em construção!')">Replicar</button></td></tr>
     `).join('') || '<tr><td colspan="5">Você ainda não possui pedidos.</td></tr>';
   }
-
-  function replicarPedido() { alert("Funcionalidade: Itens adicionados ao carrinho novamente!"); }
-  function solicitarCancelamento(id) { 
-    if(confirm("Deseja solicitar o cancelamento deste pedido?")) {
-      const p = dbOrders.find(o => o.id === id);
-      if(p) p.status = 'Cancelado';
-      renderizarUserPainel();
-    }
-  }
-
-  function mudarAbaUser(aba, btn) {
-    document.querySelectorAll('#user-view .dash-content > div').forEach(d => d.classList.add('hide'));
-    document.getElementById('user-tab-' + aba).classList.remove('hide');
-    document.querySelectorAll('#user-view .sidebar-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-  }
-  function abrirModalEndereco() { alert("Modal de cadastro de endereço em construção."); }
+  function mudarAbaUser(aba, btn) { document.querySelectorAll('#user-view .dash-content > div').forEach(d => d.classList.add('hide')); document.getElementById('user-tab-' + aba).classList.remove('hide'); document.querySelectorAll('#user-view .sidebar-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
+  function abrirModalEndereco() { alert("Modal de cadastro em construção."); }
 </script>
 </body>
 </html>
