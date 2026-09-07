@@ -32,7 +32,9 @@ img{display:block; max-width:100%;}
 .hero-banner h1{font-size: clamp(1.8rem, 4vw, 2.7rem); max-width: 620px; margin: 0 auto 0.9rem; color: var(--verde-escuro); font-style: italic;}
 .hero-banner p{color: var(--texto-suave); font-size: 1.05rem;}
 
-/* PRODUCTS GRID & CAROUSEL */
+/* FILTERS & PRODUCTS GRID */
+.filters-bar{max-width: 1180px; margin: 0 auto; padding: 1rem 1.5rem 0; display:flex; gap:10px; flex-wrap:wrap;}
+.filter-select{padding: 8px 12px; border: 1px solid var(--linha); border-radius: 4px; font-size: 0.85rem; background: var(--branco); color: var(--texto-suave); font-family: Arial, sans-serif; min-width: 160px;}
 .products-grid{display:grid; grid-template-columns: 1fr; gap: 24px; padding: 2rem 1.5rem 3rem; max-width: 1180px; margin: 0 auto;}
 .product-card{background: var(--branco); border-radius: 4px; overflow:hidden; border: 1px solid var(--linha); display:flex; flex-direction:column; position: relative;}
 .product-image-container{height: 240px; background: var(--areia); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;}
@@ -134,6 +136,11 @@ img{display:block; max-width:100%;}
     <h1>Descubra a essência do cuidado artesanal</h1>
     <p>Aromas que transformam o seu ambiente.</p>
   </section>
+
+  <div class="filters-bar" id="vitrine-filters">
+    <select class="filter-select" id="vitrine-cat" onchange="renderizarVitrine()"><option value="">Todas as Categorias</option></select>
+    <select class="filter-select" id="vitrine-col" onchange="renderizarVitrine()"><option value="">Todas as Coleções</option></select>
+  </div>
 
   <main class="products-grid" id="public-products-grid">
     <div style="text-align:center; grid-column: 1/-1; padding: 40px; color: var(--texto-suave);">Carregando produtos...</div>
@@ -252,9 +259,13 @@ img{display:block; max-width:100%;}
       
       <!-- ABA PRODUTOS -->
       <div id="admin-tab-products" class="hide">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem; flex-wrap:wrap; gap:10px;">
           <h2 style="font-family: Georgia, serif; color: var(--verde-escuro);">Produtos</h2>
-          <button class="btn-primary" style="padding: 8px 16px; font-size: 0.85rem;" onclick="abrirModalProduto()">+ Cadastrar Produto</button>
+          <button class="btn-primary" style="padding: 8px 16px; font-size: 0.85rem; flex-shrink:0;" onclick="abrirModalProduto()">+ Cadastrar Produto</button>
+        </div>
+        <div style="display:flex; gap: 10px; margin-bottom: 1.5rem; flex-wrap:wrap;">
+          <select class="filter-select" id="admin-cat" onchange="sincronizarAdminProdutos()"><option value="">Todas as Categorias</option></select>
+          <select class="filter-select" id="admin-col" onchange="sincronizarAdminProdutos()"><option value="">Todas as Coleções</option></select>
         </div>
         <table class="data-table">
           <thead><tr><th>Nome</th><th>Estoque</th><th>Preço</th><th>Status</th><th>Ações</th></tr></thead>
@@ -368,7 +379,7 @@ img{display:block; max-width:100%;}
       timeoutID = setTimeout(() => {
         alert("Sessão expirada por inatividade.");
         fazerLogout();
-      }, 60 * 60 * 1000); // 60 minutos
+      }, 60 * 60 * 1000); 
     }
   }
   window.addEventListener('mousemove', resetTimer);
@@ -385,11 +396,30 @@ img{display:block; max-width:100%;}
     if(resCol.data) dbCollections = resCol.data;
     if(resProd.data) dbProducts = resProd.data;
     
+    preencherSelects();
     renderizarVitrine();
     if(userLogged?.role === 'superadmin') {
-      sincronizarAdmin();
-      preencherSelectsAdmin();
+      sincronizarAdminConfig();
+      sincronizarAdminProdutos();
     }
+  }
+
+  // ALIMENTAÇÃO UNIFICADA DE FILTROS E DROPDOWNS
+  function preencherSelects() {
+    const catOptionsHTML = '<option value="">Todas as Categorias</option>' + dbCategories.filter(c=>c.is_active).map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
+    const colOptionsHTML = '<option value="">Todas as Coleções</option>' + dbCollections.filter(c=>c.is_active).map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
+    
+    // Vitrine
+    document.getElementById('vitrine-cat').innerHTML = catOptionsHTML;
+    document.getElementById('vitrine-col').innerHTML = colOptionsHTML;
+    
+    // Admin Filtros
+    document.getElementById('admin-cat').innerHTML = catOptionsHTML;
+    document.getElementById('admin-col').innerHTML = colOptionsHTML;
+
+    // Modal de Cadastro
+    document.getElementById('prod-cat').innerHTML = dbCategories.filter(c=>c.is_active).map(c => `<option value="${c.nome}">${c.nome}</option>`).join('') || '<option value="">Crie uma categoria primeiro</option>';
+    document.getElementById('prod-col').innerHTML = '<option value="">Nenhuma</option>' + dbCollections.filter(c=>c.is_active).map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
   }
 
   // ----- MÁSCARAS E VALIDAÇÕES -----
@@ -460,7 +490,8 @@ img{display:block; max-width:100%;}
       btn.onclick = () => { 
         document.getElementById('store-view').classList.add('hide'); 
         document.getElementById('admin-view').classList.remove('hide'); 
-        sincronizarAdmin(); 
+        sincronizarAdminConfig();
+        sincronizarAdminProdutos(); 
       }; 
     } 
     else { 
@@ -515,8 +546,17 @@ img{display:block; max-width:100%;}
   // ----- VITRINE -----
   function renderizarVitrine() {
     const grid = document.getElementById('public-products-grid');
-    const ativos = dbProducts.filter(p => p.is_active);
-    if(ativos.length === 0) { grid.innerHTML = '<div style="text-align:center; grid-column:1/-1; padding:40px; color:var(--texto-suave);">Nenhum produto disponível no momento.</div>'; return; }
+    const filtroCat = document.getElementById('vitrine-cat').value;
+    const filtroCol = document.getElementById('vitrine-col').value;
+    
+    const ativos = dbProducts.filter(p => {
+      if(!p.is_active) return false;
+      if(filtroCat && p.categoria !== filtroCat) return false;
+      if(filtroCol && p.colecao !== filtroCol) return false;
+      return true;
+    });
+
+    if(ativos.length === 0) { grid.innerHTML = '<div style="text-align:center; grid-column:1/-1; padding:40px; color:var(--texto-suave);">Nenhum produto encontrado.</div>'; return; }
     
     grid.innerHTML = ativos.map(p => {
       activeImageIndex[p.id] = 0;
@@ -542,7 +582,7 @@ img{display:block; max-width:100%;}
         ${badgeHtml}
         <div class="product-image-container">${imgHtml}</div>
         <div class="product-body">
-          <p class="product-cat">${p.categoria}</p>
+          <p class="product-cat">${p.categoria || ''} ${p.colecao ? `&bull; ${p.colecao}` : ''}</p>
           <h3 style="color:var(--verde-escuro)">${p.nome}</h3>
           ${precoHtml}
         </div>
@@ -568,10 +608,19 @@ img{display:block; max-width:100%;}
   // ----- ADMIN: TABELAS E CONFIGURAÇÕES -----
   function mudarAbaAdmin(aba, btn) { document.querySelectorAll('#admin-view .dash-content > div').forEach(d => d.classList.add('hide')); document.getElementById('admin-tab-' + aba).classList.remove('hide'); document.querySelectorAll('#admin-view .sidebar-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
   
-  function sincronizarAdmin() {
-    document.getElementById('admin-products-table').innerHTML = dbProducts.map(p => `
+  function sincronizarAdminProdutos() {
+    const filtroCat = document.getElementById('admin-cat').value;
+    const filtroCol = document.getElementById('admin-col').value;
+    
+    const filtrados = dbProducts.filter(p => {
+      if(filtroCat && p.categoria !== filtroCat) return false;
+      if(filtroCol && p.colecao !== filtroCol) return false;
+      return true;
+    });
+
+    document.getElementById('admin-products-table').innerHTML = filtrados.map(p => `
       <tr class="${!p.is_active ? 'muted' : ''}">
-        <td>${p.nome}</td>
+        <td>${p.nome} <br><small style="color:var(--texto-suave)">${p.categoria || 'Sem categoria'}</small></td>
         <td>${p.estoque} un.</td>
         <td>${formatarMoeda(p.preco)}</td>
         <td><span class="status-badge" style="background:${p.is_active ? '#d4edda; color:#155724' : '#f8d7da; color:#721c24'}">${p.is_active ? 'Ativo' : 'Oculto'}</span></td>
@@ -580,26 +629,24 @@ img{display:block; max-width:100%;}
           <button class="action-link" onclick="alternarStatusProduto('${p.id}', ${!p.is_active})">${p.is_active ? 'Ocultar' : 'Ativar'}</button>
           <button class="action-link" style="color:var(--erro)" onclick="excluirProduto('${p.id}')">Excluir</button>
         </td>
-      </tr>`).join('') || '<tr><td colspan="5">Nenhum produto cadastrado.</td></tr>';
+      </tr>`).join('') || '<tr><td colspan="5">Nenhum produto cadastrado/encontrado.</td></tr>';
+  }
 
-    const renderConfigRow = (item, type) => `
+  function sincronizarAdminConfig() {
+    const renderConfigRow = (item, type) => {
+      // Impede que aspas no nome quebrem a função JavaScript no onclick
+      const nomeFormatado = item.nome.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+      return `
       <tr class="${!item.is_active ? 'muted' : ''}">
         <td>${item.nome}</td>
         <td style="text-align:right">
           <button class="action-link" onclick="alternarStatusConfig('${type}', '${item.id}', ${!item.is_active})">${item.is_active ? 'Desativar' : 'Ativar'}</button>
-          <button class="action-link" style="color:var(--erro)" onclick="excluirConfig('${type}', '${item.id}')">Excluir</button>
+          <button class="action-link" style="color:var(--erro)" onclick="excluirConfig('${type}', '${item.id}', '${nomeFormatado}')">Excluir</button>
         </td>
       </tr>`;
+    };
     document.getElementById('table-categorias').innerHTML = dbCategories.map(c => renderConfigRow(c, 'categories')).join('') || '<tr><td colspan="2">Nenhuma categoria</td></tr>';
     document.getElementById('table-colecoes').innerHTML = dbCollections.map(c => renderConfigRow(c, 'collections')).join('') || '<tr><td colspan="2">Nenhuma coleção</td></tr>';
-    preencherSelectsAdmin();
-  }
-
-  function preencherSelectsAdmin() {
-    const selCat = document.getElementById('prod-cat');
-    const selCol = document.getElementById('prod-col');
-    selCat.innerHTML = dbCategories.filter(c=>c.is_active).map(c => `<option value="${c.nome}">${c.nome}</option>`).join('') || '<option value="">Crie uma categoria primeiro</option>';
-    selCol.innerHTML = '<option value="">Nenhuma</option>' + dbCollections.filter(c=>c.is_active).map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
   }
 
   // TRATAMENTO DE ERROS NO CRUD CONFIG
@@ -624,8 +671,12 @@ img{display:block; max-width:100%;}
     else carregarDadosIniciais();
   }
   
-  async function excluirConfig(table, id) {
-    if(confirm('Tem certeza? Produtos vinculados podem perder a referência visual.')) {
+  async function excluirConfig(table, id, nome) {
+    if(confirm('Tem certeza? Os produtos vinculados perderão esta informação e ficarão na classificação padrão, mas não serão apagados.')) {
+      
+      const colunaUpdate = table === 'categories' ? 'categoria' : 'colecao';
+      await supabaseClient.from('products').update({ [colunaUpdate]: null }).eq(colunaUpdate, nome);
+      
       const { error } = await supabaseClient.from(table).delete().eq('id', id);
       if(error) alert(error.message);
       else carregarDadosIniciais();
@@ -643,7 +694,7 @@ img{display:block; max-width:100%;}
       const p = dbProducts.find(x => x.id === id);
       if(p) {
         document.getElementById('prod-nome').value = p.nome;
-        document.getElementById('prod-cat').value = p.categoria;
+        document.getElementById('prod-cat').value = p.categoria || "";
         document.getElementById('prod-col').value = p.colecao || "";
         document.getElementById('prod-preco').value = p.preco;
         document.getElementById('prod-desc-perc').value = p.desconto_percentual || 0;
@@ -660,55 +711,65 @@ img{display:block; max-width:100%;}
     const btn = document.getElementById('btn-save-prod');
     btn.disabled = true; btn.innerText = "Salvando...";
 
-    const id = document.getElementById('prod-id').value;
-    const fileInput = document.getElementById('prod-imagens');
-    const files = fileInput.files;
+    try {
+      const id = document.getElementById('prod-id').value;
+      const fileInput = document.getElementById('prod-imagens');
+      const files = fileInput.files;
 
-    if(files.length > 5) { alert("Máximo de 5 imagens permitidas."); btn.disabled = false; btn.innerText = "Salvar Produto"; return; }
+      if(files.length > 5) { 
+        alert("Máximo de 5 imagens permitidas."); 
+        btn.disabled = false; btn.innerText = "Salvar Produto"; 
+        return; 
+      }
 
-    let imagensUrl = id ? (dbProducts.find(x => x.id === id)?.imagens || []) : [];
+      let imagensUrl = id ? (dbProducts.find(x => x.id === id)?.imagens || []) : [];
 
-    if(files.length > 0) {
-      imagensUrl = []; 
-      for(let i=0; i<files.length; i++) {
-        const file = files[i];
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
-        const { data, error } = await supabaseClient.storage.from('produtos').upload(fileName, file);
-        if(!error && data) {
-          const { data: publicUrlData } = supabaseClient.storage.from('produtos').getPublicUrl(data.path);
-          imagensUrl.push(publicUrlData.publicUrl);
+      if(files.length > 0) {
+        imagensUrl = []; 
+        for(let i=0; i<files.length; i++) {
+          const file = files[i];
+          const fileName = `${Math.random()}.${file.name.split('.').pop()}`;
+          const { data, error } = await supabaseClient.storage.from('produtos').upload(fileName, file);
+          
+          if(error) throw new Error(`Falha no upload da imagem: ${error.message}`);
+          
+          if(data) {
+            const { data: publicUrlData } = supabaseClient.storage.from('produtos').getPublicUrl(data.path);
+            imagensUrl.push(publicUrlData.publicUrl);
+          }
         }
       }
-    }
 
-    const prodData = {
-      nome: document.getElementById('prod-nome').value,
-      categoria: document.getElementById('prod-cat').value,
-      colecao: document.getElementById('prod-col').value || null,
-      preco: parseFloat(document.getElementById('prod-preco').value),
-      desconto_percentual: parseInt(document.getElementById('prod-desc-perc').value) || 0,
-      estoque: parseInt(document.getElementById('prod-estoque').value) || 0,
-      peso: document.getElementById('prod-peso').value,
-      descricao: document.getElementById('prod-desc').value,
-      imagens: imagensUrl
-    };
+      const prodData = {
+        nome: document.getElementById('prod-nome').value,
+        categoria: document.getElementById('prod-cat').value || null,
+        colecao: document.getElementById('prod-col').value || null,
+        preco: parseFloat(document.getElementById('prod-preco').value),
+        desconto_percentual: parseInt(document.getElementById('prod-desc-perc').value) || 0,
+        estoque: parseInt(document.getElementById('prod-estoque').value) || 0,
+        peso: document.getElementById('prod-peso').value,
+        descricao: document.getElementById('prod-desc').value,
+        imagens: imagensUrl
+      };
 
-    let opError;
-    if(id) { 
-      const { error } = await supabaseClient.from('products').update(prodData).eq('id', id).select(); 
-      opError = error;
-    } else { 
-      const { error } = await supabaseClient.from('products').insert([prodData]).select(); 
-      opError = error;
-    }
+      let response;
+      if(id) { 
+        response = await supabaseClient.from('products').update(prodData).eq('id', id).select(); 
+      } else { 
+        response = await supabaseClient.from('products').insert([prodData]).select(); 
+      }
 
-    if(opError) {
-      alert(`Falha ao salvar produto: ${opError.message}`);
-    } else {
-      fecharTudo(); carregarDadosIniciais();
+      if(response.error) throw new Error(`Erro no BD: ${response.error.message}`);
+
+      fecharTudo(); 
+      carregarDadosIniciais();
+
+    } catch (err) {
+      alert(`ALERTA DE FALHA: ${err.message}`);
+    } finally {
+      btn.disabled = false; 
+      btn.innerText = "Salvar Produto";
     }
-    btn.disabled = false; btn.innerText = "Salvar Produto";
   }
 
   async function alternarStatusProduto(id, is_active) {
