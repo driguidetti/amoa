@@ -393,8 +393,8 @@ img{display:block; max-width:100%;}
     const email = document.getElementById('auth-email').value;
     const pw = document.getElementById('auth-pw').value;
     
-    // Regra simples: admin@amoa.com.br entra como superadmin. Qualquer outro entra como cliente.
-    if(email === 'admin@amoa.com.br') {
+    // Regra simples: amoa.artesanato@outlook.com entra como superadmin. Qualquer outro entra como cliente.
+    if(email === 'amoa.artesanato@outlook.com') {
       userLogged = { email, role: 'superadmin', nome: 'Administrador' };
     } else {
       userLogged = { email, role: 'client', nome: email.split('@')[0] };
