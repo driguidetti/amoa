@@ -340,9 +340,41 @@ img{display:block; max-width:100%;}
   const formatarMoeda = (valor) => Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const gerarId = () => Math.floor(Math.random() * 90000) + 10000;
 
-  // INIT
+  // INIT COM RESTAURAÇÃO DE SESSÃO
+  async function restaurarSessao() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session) {
+      const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
+      userLogged = {
+        id: session.user.id,
+        email: session.user.email,
+        role: profile?.role || 'client',
+        nome: profile?.nome || session.user.email.split('@')[0]
+      };
+      atualizarHeader();
+      resetTimer(); // Inicia o contador de inatividade ao logar
+    }
+    carregarDadosIniciais();
+  }
+  restaurarSessao();
+
+  // TIMEOUT DE INATIVIDADE (60 MINUTOS)
+  let timeoutID;
+  function resetTimer() {
+    clearTimeout(timeoutID);
+    if(userLogged) {
+      timeoutID = setTimeout(() => {
+        alert("Sessão expirada por inatividade.");
+        fazerLogout();
+      }, 60 * 60 * 1000); // 60 minutos
+    }
+  }
+  window.addEventListener('mousemove', resetTimer);
+  window.addEventListener('keypress', resetTimer);
+  window.addEventListener('click', resetTimer);
+  window.addEventListener('scroll', resetTimer);
+
   async function carregarDadosIniciais() {
-    // Busca dados reais do Supabase
     const resCat = await supabaseClient.from('categories').select('*').order('created_at');
     const resCol = await supabaseClient.from('collections').select('*').order('created_at');
     const resProd = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
@@ -357,7 +389,6 @@ img{display:block; max-width:100%;}
       preencherSelectsAdmin();
     }
   }
-  carregarDadosIniciais();
 
   // ----- MÁSCARAS -----
   function maskPhone(event) {
@@ -398,7 +429,7 @@ img{display:block; max-width:100%;}
     if (error) return errorDiv.innerText = "Senha incorreta.";
     const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', auth.user.id).single();
     userLogged = { id: auth.user.id, email: auth.user.email, role: profile?.role || 'client', nome: profile?.nome || email.split('@')[0] };
-    fecharAuth(); atualizarHeader(); carregarDadosIniciais(); document.getElementById('header-auth-btn').click(); 
+    fecharAuth(); atualizarHeader(); carregarDadosIniciais(); document.getElementById('header-auth-btn').click(); resetTimer();
   }
 
   async function realizarCadastro(e) {
@@ -415,7 +446,7 @@ img{display:block; max-width:100%;}
     if (data.user) {
       await supabaseClient.from('profiles').upsert([{ id: data.user.id, email, nome, role: 'client' }]);
       userLogged = { id: data.user.id, email, role: 'client', nome };
-      fecharAuth(); atualizarHeader(); carregarDadosIniciais(); document.getElementById('header-auth-btn').click(); 
+      fecharAuth(); atualizarHeader(); carregarDadosIniciais(); document.getElementById('header-auth-btn').click(); resetTimer();
     }
   }
 
@@ -426,7 +457,7 @@ img{display:block; max-width:100%;}
     else { btn.innerText = "Minha Conta"; btn.onclick = () => { document.getElementById('store-view').classList.add('hide'); document.getElementById('user-view').classList.remove('hide'); }; }
   }
 
-  function fazerLogout() { supabaseClient.auth.signOut(); userLogged = null; document.getElementById('admin-view').classList.add('hide'); document.getElementById('user-view').classList.add('hide'); document.getElementById('store-view').classList.remove('hide'); atualizarHeader(); }
+  function fazerLogout() { supabaseClient.auth.signOut(); userLogged = null; clearTimeout(timeoutID); document.getElementById('admin-view').classList.add('hide'); document.getElementById('user-view').classList.add('hide'); document.getElementById('store-view').classList.remove('hide'); atualizarHeader(); }
 
   // ----- CARRINHO E CHECKOUT -----
   function adicionarAoCarrinho(id) { const prod = dbProducts.find(p => p.id === id); if(prod) carrinho.push(prod); atualizarCarrinho(); abrirCarrinho(); }
@@ -470,8 +501,8 @@ img{display:block; max-width:100%;}
       if(p.imagens && p.imagens.length > 0) {
         imgHtml = `<img id="img-prod-${p.id}" src="${p.imagens[0]}" alt="${p.nome}">`;
         if(p.imagens.length > 1) {
-          imgHtml += `<button class="carousel-btn carousel-prev" onclick="mudarFoto(${p.id}, -1)">❮</button>
-                      <button class="carousel-btn carousel-next" onclick="mudarFoto(${p.id}, 1)">❯</button>`;
+          imgHtml += `<button class="carousel-btn carousel-prev" onclick="mudarFoto('${p.id}', -1)">❮</button>
+                      <button class="carousel-btn carousel-next" onclick="mudarFoto('${p.id}', 1)">❯</button>`;
         }
       } else { imgHtml = `<i class="ph-thin ph-package"></i>`; }
 
@@ -515,7 +546,6 @@ img{display:block; max-width:100%;}
   function mudarAbaAdmin(aba, btn) { document.querySelectorAll('#admin-view .dash-content > div').forEach(d => d.classList.add('hide')); document.getElementById('admin-tab-' + aba).classList.remove('hide'); document.querySelectorAll('#admin-view .sidebar-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
   
   function sincronizarAdmin() {
-    // Tabela Produtos
     document.getElementById('admin-products-table').innerHTML = dbProducts.map(p => `
       <tr class="${!p.is_active ? 'muted' : ''}">
         <td>${p.nome}</td>
@@ -529,7 +559,6 @@ img{display:block; max-width:100%;}
         </td>
       </tr>`).join('') || '<tr><td colspan="5">Nenhum produto cadastrado.</td></tr>';
 
-    // Tabelas Configs
     const renderConfigRow = (item, type) => `
       <tr class="${!item.is_active ? 'muted' : ''}">
         <td>${item.nome}</td>
@@ -550,27 +579,37 @@ img{display:block; max-width:100%;}
     selCol.innerHTML = '<option value="">Nenhuma</option>' + dbCollections.filter(c=>c.is_active).map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
   }
 
-  // Configurações (Categorias/Coleções) CRUD
+  // TRATAMENTO DE ERROS NO CRUD CONFIG
   async function salvarConfig(tipo) {
     const table = tipo === 'categoria' ? 'categories' : 'collections';
     const input = document.getElementById(tipo === 'categoria' ? 'nova-cat' : 'nova-col');
     if(!input.value) return;
-    await supabaseClient.from(table).insert([{ nome: input.value }]);
+    
+    const { error } = await supabaseClient.from(table).insert([{ nome: input.value }]);
+    if (error) {
+      alert(`Falha de permissão ou erro ao salvar: ${error.message}`);
+      return;
+    }
+    
     input.value = '';
     carregarDadosIniciais();
   }
+  
   async function alternarStatusConfig(table, id, status) {
-    await supabaseClient.from(table).update({ is_active: status }).eq('id', id);
-    carregarDadosIniciais();
+    const { error } = await supabaseClient.from(table).update({ is_active: status }).eq('id', id);
+    if(error) alert(error.message);
+    else carregarDadosIniciais();
   }
+  
   async function excluirConfig(table, id) {
     if(confirm('Tem certeza? Produtos vinculados podem perder a referência visual.')) {
-      await supabaseClient.from(table).delete().eq('id', id);
-      carregarDadosIniciais();
+      const { error } = await supabaseClient.from(table).delete().eq('id', id);
+      if(error) alert(error.message);
+      else carregarDadosIniciais();
     }
   }
 
-  // Produtos CRUD
+  // TRATAMENTO DE ERROS NO CRUD PRODUTOS
   function abrirModalProduto(id = null) {
     const form = document.getElementById('product-form');
     form.reset();
@@ -606,9 +645,8 @@ img{display:block; max-width:100%;}
 
     let imagensUrl = id ? (dbProducts.find(x => x.id === id)?.imagens || []) : [];
 
-    // Upload das novas imagens (Adiciona às existentes)
     if(files.length > 0) {
-      imagensUrl = []; // Se enviar nova foto, substitui as antigas na visualização básica
+      imagensUrl = []; 
       for(let i=0; i<files.length; i++) {
         const file = files[i];
         const fileExt = file.name.split('.').pop();
@@ -633,22 +671,34 @@ img{display:block; max-width:100%;}
       imagens: imagensUrl
     };
 
-    if(id) { await supabaseClient.from('products').update(prodData).eq('id', id); } 
-    else { await supabaseClient.from('products').insert([prodData]); }
+    let opError;
+    if(id) { 
+      const { error } = await supabaseClient.from('products').update(prodData).eq('id', id); 
+      opError = error;
+    } else { 
+      const { error } = await supabaseClient.from('products').insert([prodData]); 
+      opError = error;
+    }
 
+    if(opError) {
+      alert(`Falha ao salvar produto: ${opError.message}`);
+    } else {
+      fecharTudo(); carregarDadosIniciais();
+    }
     btn.disabled = false; btn.innerText = "Salvar Produto";
-    fecharTudo(); carregarDadosIniciais();
   }
 
   async function alternarStatusProduto(id, is_active) {
-    await supabaseClient.from('products').update({ is_active }).eq('id', id);
-    carregarDadosIniciais();
+    const { error } = await supabaseClient.from('products').update({ is_active }).eq('id', id);
+    if(error) alert(error.message);
+    else carregarDadosIniciais();
   }
   
   async function excluirProduto(id) {
     if(confirm("Deseja realmente excluir este produto permanentemente?")) {
-      await supabaseClient.from('products').delete().eq('id', id);
-      carregarDadosIniciais();
+      const { error } = await supabaseClient.from('products').delete().eq('id', id);
+      if(error) alert(error.message);
+      else carregarDadosIniciais();
     }
   }
 </script>
