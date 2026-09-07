@@ -33,8 +33,14 @@ img{display:block; max-width:100%;}
 .hero-banner p{color: var(--texto-suave); font-size: 1.05rem;}
 
 /* FILTERS & PRODUCTS GRID */
-.filters-bar{max-width: 1180px; margin: 0 auto; padding: 1rem 1.5rem 0; display:flex; gap:10px; flex-wrap:wrap;}
-.filter-select{padding: 8px 12px; border: 1px solid var(--linha); border-radius: 4px; font-size: 0.85rem; background: var(--branco); color: var(--texto-suave); font-family: Arial, sans-serif; min-width: 160px;}
+.filters-wrapper{max-width: 1180px; margin: 0 auto; padding: 1.5rem 1.5rem 0; display:flex; flex-direction:column; gap:12px;}
+.filter-group{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+.filter-group-title{font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--texto-suave); font-family: Arial, sans-serif; min-width: 75px;}
+.btn-group{display:flex; gap:8px; flex-wrap:wrap;}
+.filter-btn{padding: 6px 14px; border: 1px solid var(--linha); border-radius: 20px; font-size: 0.85rem; background: var(--branco); color: var(--texto-suave); font-family: Arial, sans-serif; transition: all 0.2s ease;}
+.filter-btn:hover{border-color: var(--verde); color: var(--verde-escuro);}
+.filter-btn.active{background: var(--verde-escuro); color: var(--branco); border-color: var(--verde-escuro); font-weight: bold;}
+
 .products-grid{display:grid; grid-template-columns: 1fr; gap: 24px; padding: 2rem 1.5rem 3rem; max-width: 1180px; margin: 0 auto;}
 .product-card{background: var(--branco); border-radius: 4px; overflow:hidden; border: 1px solid var(--linha); display:flex; flex-direction:column; position: relative;}
 .product-image-container{height: 240px; background: var(--areia); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;}
@@ -45,10 +51,11 @@ img{display:block; max-width:100%;}
 .badge-desconto {position: absolute; top: 10px; right: 10px; background: var(--terracota); color: white; font-family: Arial, sans-serif; font-size: 0.75rem; font-weight: bold; padding: 4px 8px; border-radius: 4px; z-index: 2;}
 .product-body{padding: 1.1rem 1.2rem 1.3rem; display:flex; flex-direction:column; flex:1;}
 .product-cat{font-family: Arial, sans-serif; font-size: 0.7rem; letter-spacing: 0.08em; color: var(--terracota); text-transform: uppercase; margin-bottom: 6px;}
-.product-card h3{font-size: 1.15rem; margin-bottom: 6px;}
+.product-card h3{font-size: 1.15rem; margin-bottom: 4px;}
+.product-desc{font-size: 0.85rem; color: var(--texto-suave); margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;}
 .price-wrap{display: flex; gap: 8px; align-items: baseline; font-family: Arial, sans-serif;}
 .price-old{font-size: 0.9rem; color: var(--texto-suave); text-decoration: line-through;}
-.product-price{font-size: 1.15rem; color: var(--verde-escuro); font-weight: bold;}
+.product-price{font-size: 1.15rem; color: var(--verde-escuro); font-weight: bold; margin-top: auto;}
 .product-footer{display:flex; align-items:center; justify-content:flex-end; padding: 10px;}
 .add-btn{background: var(--verde-escuro); color:white; border:none; padding: 9px 18px; border-radius: 20px; font-size: 0.85rem; font-family: Arial, sans-serif; transition: background .2s;}
 .add-btn:hover{background: var(--texto);}
@@ -102,6 +109,7 @@ img{display:block; max-width:100%;}
 .data-table th { color: var(--texto-suave); font-weight: normal; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; }
 .action-link { background: none; border: none; color: var(--terracota); text-decoration: underline; font-size: 0.8rem; margin-right: 10px; cursor: pointer;}
 .action-link:hover { color: var(--texto); }
+.filter-select { padding: 8px 12px; border: 1px solid var(--linha); border-radius: 4px; font-size: 0.85rem; background: var(--branco); color: var(--texto-suave); font-family: Arial, sans-serif; min-width: 160px;}
 .muted {opacity: 0.5; filter: grayscale(1);}
 
 /* MISC */
@@ -137,9 +145,15 @@ img{display:block; max-width:100%;}
     <p>Aromas que transformam o seu ambiente.</p>
   </section>
 
-  <div class="filters-bar" id="vitrine-filters">
-    <select class="filter-select" id="vitrine-cat" onchange="renderizarVitrine()"><option value="">Todas as Categorias</option></select>
-    <select class="filter-select" id="vitrine-col" onchange="renderizarVitrine()"><option value="">Todas as Coleções</option></select>
+  <div class="filters-wrapper" id="vitrine-filters">
+    <div class="filter-group">
+      <span class="filter-group-title">Categorias:</span>
+      <div id="vitrine-cat-buttons" class="btn-group"></div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-group-title">Coleções:</span>
+      <div id="vitrine-col-buttons" class="btn-group"></div>
+    </div>
   </div>
 
   <main class="products-grid" id="public-products-grid">
@@ -349,6 +363,10 @@ img{display:block; max-width:100%;}
   let dbCategories = [];
   let dbCollections = [];
   let activeImageIndex = {};
+  
+  // Filtros Ativos
+  let filtroCatAtivo = '';
+  let filtroColAtivo = '';
 
   const formatarMoeda = (valor) => Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const gerarId = () => Math.floor(Math.random() * 90000) + 10000;
@@ -408,20 +426,40 @@ img{display:block; max-width:100%;}
 
   // ALIMENTAÇÃO UNIFICADA DE FILTROS E DROPDOWNS
   function preencherSelects() {
-    const catOptionsHTML = '<option value="">Todas as Categorias</option>' + dbCategories.filter(c=>c.is_active).map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
-    const colOptionsHTML = '<option value="">Todas as Coleções</option>' + dbCollections.filter(c=>c.is_active).map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
+    const catAtivas = dbCategories.filter(c=>c.is_active);
+    const colAtivas = dbCollections.filter(c=>c.is_active);
     
-    // Vitrine
-    document.getElementById('vitrine-cat').innerHTML = catOptionsHTML;
-    document.getElementById('vitrine-col').innerHTML = colOptionsHTML;
+    // Gerar Botões da Vitrine
+    const renderBtns = (lista, atual, tipo) => {
+      let html = `<button class="filter-btn ${atual === '' ? 'active' : ''}" onclick="setFiltro('${tipo}', '')">Todas</button>`;
+      html += lista.map(item => {
+        const nomeSeguro = item.nome.replace(/'/g, "\\'");
+        return `<button class="filter-btn ${atual === item.nome ? 'active' : ''}" onclick="setFiltro('${tipo}', '${nomeSeguro}')">${item.nome}</button>`;
+      }).join('');
+      return html;
+    };
     
-    // Admin Filtros
+    document.getElementById('vitrine-cat-buttons').innerHTML = renderBtns(catAtivas, filtroCatAtivo, 'cat');
+    document.getElementById('vitrine-col-buttons').innerHTML = renderBtns(colAtivas, filtroColAtivo, 'col');
+
+    // Admin Filtros (Mantém os selects tradicionais para não afetar o painel)
+    const catOptionsHTML = '<option value="">Todas as Categorias</option>' + catAtivas.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
+    const colOptionsHTML = '<option value="">Todas as Coleções</option>' + colAtivas.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
+    
     document.getElementById('admin-cat').innerHTML = catOptionsHTML;
     document.getElementById('admin-col').innerHTML = colOptionsHTML;
 
     // Modal de Cadastro
-    document.getElementById('prod-cat').innerHTML = dbCategories.filter(c=>c.is_active).map(c => `<option value="${c.nome}">${c.nome}</option>`).join('') || '<option value="">Crie uma categoria primeiro</option>';
-    document.getElementById('prod-col').innerHTML = '<option value="">Nenhuma</option>' + dbCollections.filter(c=>c.is_active).map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
+    document.getElementById('prod-cat').innerHTML = catAtivas.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('') || '<option value="">Crie uma categoria primeiro</option>';
+    document.getElementById('prod-col').innerHTML = '<option value="">Nenhuma</option>' + colAtivas.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
+  }
+
+  // Função para os botões da vitrine
+  function setFiltro(tipo, valor) {
+    if (tipo === 'cat') filtroCatAtivo = valor;
+    if (tipo === 'col') filtroColAtivo = valor;
+    preencherSelects();
+    renderizarVitrine();
   }
 
   // ----- MÁSCARAS E VALIDAÇÕES -----
@@ -555,13 +593,11 @@ img{display:block; max-width:100%;}
   // ----- VITRINE -----
   function renderizarVitrine() {
     const grid = document.getElementById('public-products-grid');
-    const filtroCat = document.getElementById('vitrine-cat').value;
-    const filtroCol = document.getElementById('vitrine-col').value;
     
     const ativos = dbProducts.filter(p => {
       if(!p.is_active) return false;
-      if(filtroCat && p.categoria !== filtroCat) return false;
-      if(filtroCol && p.colecao !== filtroCol) return false;
+      if(filtroCatAtivo && p.categoria !== filtroCatAtivo) return false;
+      if(filtroColAtivo && p.colecao !== filtroColAtivo) return false;
       return true;
     });
 
@@ -593,6 +629,7 @@ img{display:block; max-width:100%;}
         <div class="product-body">
           <p class="product-cat">${p.categoria || ''} ${p.colecao ? `&bull; ${p.colecao}` : ''}</p>
           <h3 style="color:var(--verde-escuro)">${p.nome}</h3>
+          ${p.descricao ? `<p class="product-desc">${p.descricao}</p>` : ''}
           ${precoHtml}
         </div>
         <div class="product-footer">
@@ -643,7 +680,6 @@ img{display:block; max-width:100%;}
 
   function sincronizarAdminConfig() {
     const renderConfigRow = (item, type) => {
-      // Impede que aspas no nome quebrem a função JavaScript no onclick
       const nomeFormatado = item.nome.replace(/'/g, "\\'").replace(/"/g, "&quot;");
       return `
       <tr class="${!item.is_active ? 'muted' : ''}">
