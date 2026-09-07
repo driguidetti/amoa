@@ -335,14 +335,13 @@ img{display:block; max-width:100%;}
   let dbProducts = [];
   let dbCategories = [];
   let dbCollections = [];
-  let activeImageIndex = {}; // Guarda a foto atual no carrossel de cada produto
+  let activeImageIndex = {};
 
   const formatarMoeda = (valor) => Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const gerarId = () => Math.floor(Math.random() * 90000) + 10000;
 
-  // INIT COM RESTAURAÇÃO DE SESSÃO
-  async function restaurarSessao() {
-    const { data: { session } } = await supabaseClient.auth.getSession();
+  // INIT COM LISTENER DE SESSÃO ESTÁVEL
+  supabaseClient.auth.onAuthStateChange(async (event, session) => {
     if (session) {
       const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
       userLogged = {
@@ -352,13 +351,16 @@ img{display:block; max-width:100%;}
         nome: profile?.nome || session.user.email.split('@')[0]
       };
       atualizarHeader();
-      resetTimer(); // Inicia o contador de inatividade ao logar
+      resetTimer(); 
+      carregarDadosIniciais();
+    } else {
+      userLogged = null;
+      atualizarHeader();
+      carregarDadosIniciais();
     }
-    carregarDadosIniciais();
-  }
-  restaurarSessao();
+  });
 
-  // TIMEOUT DE INATIVIDADE (60 MINUTOS)
+  // TIMEOUT DE INATIVIDADE (60 MINUTOS EXATOS)
   let timeoutID;
   function resetTimer() {
     clearTimeout(timeoutID);
@@ -390,7 +392,7 @@ img{display:block; max-width:100%;}
     }
   }
 
-  // ----- MÁSCARAS -----
+  // ----- MÁSCARAS E VALIDAÇÕES -----
   function maskPhone(event) {
     let v = event.target.value.replace(/\D/g, '');
     if (v.length > 11) v = v.slice(0, 11);
@@ -427,9 +429,7 @@ img{display:block; max-width:100%;}
     errorDiv.innerText = "Autenticando...";
     const { data: auth, error } = await supabaseClient.auth.signInWithPassword({ email, password: pw });
     if (error) return errorDiv.innerText = "Senha incorreta.";
-    const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', auth.user.id).single();
-    userLogged = { id: auth.user.id, email: auth.user.email, role: profile?.role || 'client', nome: profile?.nome || email.split('@')[0] };
-    fecharAuth(); atualizarHeader(); carregarDadosIniciais(); document.getElementById('header-auth-btn').click(); resetTimer();
+    fecharAuth();
   }
 
   async function realizarCadastro(e) {
@@ -445,19 +445,42 @@ img{display:block; max-width:100%;}
     if (error) return document.getElementById('auth-error-register').innerText = "Erro: " + error.message;
     if (data.user) {
       await supabaseClient.from('profiles').upsert([{ id: data.user.id, email, nome, role: 'client' }]);
-      userLogged = { id: data.user.id, email, role: 'client', nome };
-      fecharAuth(); atualizarHeader(); carregarDadosIniciais(); document.getElementById('header-auth-btn').click(); resetTimer();
+      fecharAuth();
     }
   }
 
   function atualizarHeader() {
     const btn = document.getElementById('header-auth-btn');
-    if(!userLogged) { btn.innerText = "Login"; btn.onclick = abrirAuth; } 
-    else if(userLogged.role === 'superadmin') { btn.innerText = "Painel Admin"; btn.onclick = () => { document.getElementById('store-view').classList.add('hide'); document.getElementById('admin-view').classList.remove('hide'); sincronizarAdmin(); }; } 
-    else { btn.innerText = "Minha Conta"; btn.onclick = () => { document.getElementById('store-view').classList.add('hide'); document.getElementById('user-view').classList.remove('hide'); }; }
+    if(!userLogged) { 
+      btn.innerText = "Login"; 
+      btn.onclick = abrirAuth; 
+    } 
+    else if(userLogged.role === 'superadmin') { 
+      btn.innerText = "Painel Admin"; 
+      btn.onclick = () => { 
+        document.getElementById('store-view').classList.add('hide'); 
+        document.getElementById('admin-view').classList.remove('hide'); 
+        sincronizarAdmin(); 
+      }; 
+    } 
+    else { 
+      btn.innerText = "Minha Conta"; 
+      btn.onclick = () => { 
+        document.getElementById('store-view').classList.add('hide'); 
+        document.getElementById('user-view').classList.remove('hide'); 
+      }; 
+    }
   }
 
-  function fazerLogout() { supabaseClient.auth.signOut(); userLogged = null; clearTimeout(timeoutID); document.getElementById('admin-view').classList.add('hide'); document.getElementById('user-view').classList.add('hide'); document.getElementById('store-view').classList.remove('hide'); atualizarHeader(); }
+  function fazerLogout() { 
+    supabaseClient.auth.signOut(); 
+    userLogged = null; 
+    clearTimeout(timeoutID); 
+    document.getElementById('admin-view').classList.add('hide'); 
+    document.getElementById('user-view').classList.add('hide'); 
+    document.getElementById('store-view').classList.remove('hide'); 
+    atualizarHeader(); 
+  }
 
   // ----- CARRINHO E CHECKOUT -----
   function adicionarAoCarrinho(id) { const prod = dbProducts.find(p => p.id === id); if(prod) carrinho.push(prod); atualizarCarrinho(); abrirCarrinho(); }
@@ -673,10 +696,10 @@ img{display:block; max-width:100%;}
 
     let opError;
     if(id) { 
-      const { error } = await supabaseClient.from('products').update(prodData).eq('id', id); 
+      const { error } = await supabaseClient.from('products').update(prodData).eq('id', id).select(); 
       opError = error;
     } else { 
-      const { error } = await supabaseClient.from('products').insert([prodData]); 
+      const { error } = await supabaseClient.from('products').insert([prodData]).select(); 
       opError = error;
     }
 
