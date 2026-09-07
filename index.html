@@ -71,8 +71,8 @@ img{display:block; max-width:100%;}
 .cart-item{display:flex; gap:12px; padding: 12px 0; border-bottom:1px solid var(--linha); align-items:center;}
 .cart-item-info{flex:1;}
 .cart-item-info h4{font-size:0.92rem; font-weight:600; margin-bottom:2px; color: var(--texto);}
-.cart-item-price{color:var(--texto-suave); font-size:0.85rem;}
-.cart-item-remove{background:none; border:none; color:var(--erro); font-size:0.75rem; text-decoration:underline; cursor:pointer;}
+.cart-item-price{font-size:0.85rem; display: flex; gap: 6px; align-items: baseline;}
+.cart-item-remove{background:none; border:none; color:var(--erro); font-size:0.75rem; text-decoration:underline; cursor:pointer; margin-top:4px;}
 .drawer-footer{border-top:1px solid var(--linha); padding: 1.1rem 1.4rem 1.4rem;}
 .cart-total-row{display:flex; justify-content:space-between; font-size:1.05rem; margin-bottom: 14px;}
 
@@ -92,6 +92,17 @@ img{display:block; max-width:100%;}
 .btn-primary:disabled{opacity: 0.6; cursor:not-allowed;}
 .pw-wrap { position: relative; }
 .pw-toggle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--texto-suave); font-size: 1.1rem; cursor: pointer; }
+
+/* CHECKOUT SPECIFIC */
+.checkout-summary-box { background: white; border: 1px solid var(--linha); border-radius: 4px; padding: 15px; margin-bottom: 20px; font-size: 0.9rem; }
+.summary-item { display: flex; justify-content: space-between; font-size: 0.9rem; padding: 6px 0; border-bottom: 1px dashed var(--linha); }
+.summary-item:last-child { border-bottom: none; }
+.summary-total { display: flex; justify-content: space-between; font-weight: bold; font-size: 1.1rem; padding-top: 12px; margin-top: 6px; border-top: 1px solid var(--linha); color: var(--texto); }
+.payment-options { display: flex; gap: 10px; margin-bottom: 14px; }
+.payment-box { flex: 1; position: relative; cursor: pointer; }
+.payment-box input { position: absolute; opacity: 0; cursor: pointer; }
+.payment-box span { display: block; border: 1px solid var(--linha); border-radius: 4px; padding: 12px; text-align: center; font-size: 0.9rem; color: var(--texto-suave); transition: all 0.2s; background: white;}
+.payment-box input:checked + span { border-color: var(--verde-escuro); background: #f0f4f0; color: var(--verde-escuro); font-weight: bold; }
 
 /* PANELS */
 .dashboard-container { max-width: 1180px; margin: 2rem auto; padding: 0 1.5rem; display: flex; gap: 2rem; font-family: Arial, sans-serif;}
@@ -212,19 +223,58 @@ img{display:block; max-width:100%;}
 
 <!-- CHECKOUT MODAL -->
 <div class="modal-overlay" id="checkout-overlay">
-  <div class="modal">
-    <h2>Finalizar pedido</h2>
+  <div class="modal" style="max-width: 500px;">
+    <h2 style="margin-bottom: 4px;">Finalizar pedido</h2>
+    <p style="color: var(--texto-suave); font-size: 0.85rem; margin-bottom: 1.5rem;">Confirme seus dados para receber seu pedido.</p>
+    
+    <div class="checkout-summary-box" id="checkout-summary">
+      <!-- Itens renderizados aqui dinamicamente -->
+    </div>
+
     <form id="checkout-form" onsubmit="processarCheckout(event)">
+      
+      <div class="form-section-title">Dados de Contato</div>
       <div class="form-row">
-        <div class="form-group" style="flex:2"><label>Rua, Número *</label><input type="text" id="chk-rua" required></div>
-        <div class="form-group" style="flex:1"><label>Bairro *</label><input type="text" id="chk-bairro" required></div>
+        <div class="form-group"><label>Nome Completo</label><input type="text" id="chk-nome" required></div>
+        <div class="form-group"><label>WhatsApp</label><input type="text" id="chk-tel" required oninput="maskPhone(event)" maxlength="15"></div>
+      </div>
+      <div class="form-group" style="margin-top: -5px;"><label>E-mail</label><input type="email" id="chk-email" required></div>
+
+      <div class="form-section-title">Entrega</div>
+      <div class="form-row">
+        <div class="form-group" style="flex:2"><label>Endereço e Número *</label><input type="text" id="chk-rua" required></div>
+        <div class="form-group" style="flex:1"><label>Complemento</label><input type="text" id="chk-comp"></div>
       </div>
       <div class="form-row">
+        <div class="form-group"><label>Bairro *</label><input type="text" id="chk-bairro" required></div>
         <div class="form-group"><label>Cidade *</label><input type="text" id="chk-cidade" required></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Estado (UF) *</label><input type="text" id="chk-uf" required maxlength="2"></div>
         <div class="form-group"><label>CEP *</label><input type="text" id="chk-cep" required></div>
       </div>
-      <div class="form-group"><label>Pagamento *</label><select required id="chk-pag"><option value="">Selecione...</option><option value="Pix">Pix</option><option value="Cartão">Cartão</option></select></div>
-      <div class="modal-actions"><button type="button" class="btn-secondary" onclick="fecharTudo()">Voltar</button><button type="submit" class="btn-primary">Confirmar</button></div>
+      
+      <div class="form-section-title">Pagamento</div>
+      <div class="payment-options">
+        <label class="payment-box">
+          <input type="radio" name="chk-pag" value="Pix" required checked>
+          <span>Pix</span>
+        </label>
+        <label class="payment-box">
+          <input type="radio" name="chk-pag" value="Cartão" required>
+          <span>Cartão</span>
+        </label>
+      </div>
+
+      <div class="form-section-title">Observações (Opcional)</div>
+      <div class="form-group">
+        <textarea id="chk-obs" rows="2" placeholder="Ex: ponto de referência, troco para..."></textarea>
+      </div>
+
+      <div class="modal-actions" style="margin-top: 25px;">
+        <button type="button" class="btn-secondary" onclick="fecharTudo()">Voltar</button>
+        <button type="submit" class="btn-primary" id="btn-processar-pedido">Confirmar pedido</button>
+      </div>
     </form>
   </div>
 </div>
@@ -239,7 +289,10 @@ img{display:block; max-width:100%;}
       <button class="sidebar-btn" style="color:var(--erro)" onclick="fazerLogout()">Sair da Conta</button>
     </aside>
     <main class="dash-content">
-      <div id="user-tab-pedidos"><h2 style="font-family: Georgia, serif; color: var(--verde-escuro); margin-bottom: 1.5rem;">Meus Pedidos</h2><table class="data-table"><thead><tr><th>Pedido</th><th>Itens</th><th>Status</th><th>Total</th></tr></thead><tbody id="user-orders-table"></tbody></table></div>
+      <div id="user-tab-pedidos">
+        <h2 style="font-family: Georgia, serif; color: var(--verde-escuro); margin-bottom: 1.5rem;">Meus Pedidos</h2>
+        <table class="data-table"><thead><tr><th>Pedido</th><th>Itens</th><th>Status</th><th>Total</th></tr></thead><tbody id="user-orders-table"></tbody></table>
+      </div>
     </main>
   </div>
 </div>
@@ -270,7 +323,7 @@ img{display:block; max-width:100%;}
       
       <div id="admin-tab-orders" class="hide">
         <h2 style="font-family: Georgia, serif; color: var(--verde-escuro); margin-bottom: 1.5rem;">Pedidos</h2>
-        <table class="data-table"><thead><tr><th>ID</th><th>Cliente</th><th>Total</th><th>Frete</th><th>Status</th></tr></thead><tbody id="admin-orders-table"></tbody></table>
+        <table class="data-table"><thead><tr><th>ID</th><th>Cliente</th><th>Total</th><th>Pagamento</th><th>Status</th></tr></thead><tbody id="admin-orders-table"></tbody></table>
       </div>
       
       <!-- ABA PRODUTOS -->
@@ -369,7 +422,6 @@ img{display:block; max-width:100%;}
   let filtroColAtivo = '';
 
   const formatarMoeda = (valor) => Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-  const gerarId = () => Math.floor(Math.random() * 90000) + 10000;
 
   // INIT COM LISTENER DE SESSÃO ESTÁVEL
   supabaseClient.auth.onAuthStateChange(async (event, session) => {
@@ -379,11 +431,13 @@ img{display:block; max-width:100%;}
         id: session.user.id,
         email: session.user.email,
         role: profile?.role || 'client',
-        nome: profile?.nome || session.user.email.split('@')[0]
+        nome: profile?.nome || session.user.email.split('@')[0],
+        telefone: profile?.telefone || ''
       };
       atualizarHeader();
       resetTimer(); 
       carregarDadosIniciais();
+      carregarPedidos();
     } else {
       userLogged = null;
       atualizarHeader();
@@ -391,21 +445,15 @@ img{display:block; max-width:100%;}
     }
   });
 
-  // TIMEOUT DE INATIVIDADE (60 MINUTOS EXATOS)
+  // TIMEOUT DE INATIVIDADE
   let timeoutID;
   function resetTimer() {
     clearTimeout(timeoutID);
     if(userLogged) {
-      timeoutID = setTimeout(() => {
-        alert("Sessão expirada por inatividade.");
-        fazerLogout();
-      }, 60 * 60 * 1000); 
+      timeoutID = setTimeout(() => { alert("Sessão expirada por inatividade."); fazerLogout(); }, 60 * 60 * 1000); 
     }
   }
-  window.addEventListener('mousemove', resetTimer);
-  window.addEventListener('keypress', resetTimer);
-  window.addEventListener('click', resetTimer);
-  window.addEventListener('scroll', resetTimer);
+  window.addEventListener('mousemove', resetTimer); window.addEventListener('keypress', resetTimer); window.addEventListener('click', resetTimer); window.addEventListener('scroll', resetTimer);
 
   async function carregarDadosIniciais() {
     const resCat = await supabaseClient.from('categories').select('*').order('created_at');
@@ -429,7 +477,6 @@ img{display:block; max-width:100%;}
     const catAtivas = dbCategories.filter(c=>c.is_active);
     const colAtivas = dbCollections.filter(c=>c.is_active);
     
-    // Gerar Botões da Vitrine
     const renderBtns = (lista, atual, tipo) => {
       let html = `<button class="filter-btn ${atual === '' ? 'active' : ''}" onclick="setFiltro('${tipo}', '')">Todas</button>`;
       html += lista.map(item => {
@@ -442,19 +489,14 @@ img{display:block; max-width:100%;}
     document.getElementById('vitrine-cat-buttons').innerHTML = renderBtns(catAtivas, filtroCatAtivo, 'cat');
     document.getElementById('vitrine-col-buttons').innerHTML = renderBtns(colAtivas, filtroColAtivo, 'col');
 
-    // Admin Filtros (Mantém os selects tradicionais para não afetar o painel)
     const catOptionsHTML = '<option value="">Todas as Categorias</option>' + catAtivas.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
     const colOptionsHTML = '<option value="">Todas as Coleções</option>' + colAtivas.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
-    
     document.getElementById('admin-cat').innerHTML = catOptionsHTML;
     document.getElementById('admin-col').innerHTML = colOptionsHTML;
-
-    // Modal de Cadastro
     document.getElementById('prod-cat').innerHTML = catAtivas.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('') || '<option value="">Crie uma categoria primeiro</option>';
     document.getElementById('prod-col').innerHTML = '<option value="">Nenhuma</option>' + colAtivas.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
   }
 
-  // Função para os botões da vitrine
   function setFiltro(tipo, valor) {
     if (tipo === 'cat') filtroCatAtivo = valor;
     if (tipo === 'col') filtroColAtivo = valor;
@@ -521,7 +563,7 @@ img{display:block; max-width:100%;}
     const { data, error } = await supabaseClient.auth.signUp({ email, password: pw, options: { data: { nome, telefone: tel } } });
     if (error) return document.getElementById('auth-error-register').innerText = "Erro: " + error.message;
     if (data.user) {
-      await supabaseClient.from('profiles').upsert([{ id: data.user.id, email, nome, role: 'client' }]);
+      await supabaseClient.from('profiles').upsert([{ id: data.user.id, email, nome, telefone: tel, role: 'client' }]);
       fecharAuth();
     }
   }
@@ -529,34 +571,27 @@ img{display:block; max-width:100%;}
   function atualizarHeader() {
     const btn = document.getElementById('header-auth-btn');
     if(!userLogged) { 
-      btn.innerText = "Login"; 
-      btn.onclick = abrirAuth; 
-    } 
-    else if(userLogged.role === 'superadmin') { 
+      btn.innerText = "Login"; btn.onclick = abrirAuth; 
+    } else if(userLogged.role === 'superadmin') { 
       btn.innerText = "Painel Admin"; 
       btn.onclick = () => { 
         document.getElementById('store-view').classList.add('hide'); 
         document.getElementById('admin-view').classList.remove('hide'); 
-        sincronizarAdminConfig();
-        sincronizarAdminProdutos(); 
+        sincronizarAdminConfig(); sincronizarAdminProdutos(); carregarPedidos();
       }; 
-    } 
-    else { 
+    } else { 
       btn.innerText = "Minha Conta"; 
       btn.onclick = () => { 
         document.getElementById('store-view').classList.add('hide'); 
         document.getElementById('user-view').classList.remove('hide'); 
+        carregarPedidos();
       }; 
     }
   }
 
   function fazerLogout() { 
-    supabaseClient.auth.signOut(); 
-    userLogged = null; 
-    clearTimeout(timeoutID); 
-    document.getElementById('admin-view').classList.add('hide'); 
-    document.getElementById('user-view').classList.add('hide'); 
-    document.getElementById('store-view').classList.remove('hide'); 
+    supabaseClient.auth.signOut(); userLogged = null; clearTimeout(timeoutID); 
+    document.getElementById('admin-view').classList.add('hide'); document.getElementById('user-view').classList.add('hide'); document.getElementById('store-view').classList.remove('hide'); 
     atualizarHeader(); 
   }
 
@@ -567,28 +602,150 @@ img{display:block; max-width:100%;}
   function fecharCarrinho() { document.getElementById('drawer').classList.remove('show'); document.getElementById('overlay').classList.remove('show'); }
   function fecharTudo() { fecharCarrinho(); document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('show')); }
 
+  function getPrecoComDesconto(item) {
+    if(item.desconto_percentual > 0) return item.preco * (1 - (item.desconto_percentual/100));
+    return item.preco;
+  }
+
   function atualizarCarrinho() {
     const tbody = document.getElementById('drawer-body');
     document.getElementById('cart-count').innerText = carrinho.length;
     if(carrinho.length === 0) { tbody.innerHTML = '<div style="text-align:center; padding:20px; color:var(--texto-suave);">Cesta vazia.</div>'; document.getElementById('cart-total').innerText = 'R$ 0,00'; return; }
+    
     let html = '', total = 0;
     carrinho.forEach((item, i) => {
-      let precoFinal = item.preco;
-      if(item.desconto_percentual > 0) precoFinal = item.preco * (1 - (item.desconto_percentual/100));
+      let precoFinal = getPrecoComDesconto(item);
       total += precoFinal;
-      html += `<div class="cart-item"><div class="cart-item-info"><h4>${item.nome}</h4><div class="cart-item-price">${formatarMoeda(precoFinal)}</div></div><button class="cart-item-remove" onclick="removerDoCarrinho(${i})">Remover</button></div>`;
+      let displayPreco = item.desconto_percentual > 0 
+        ? `<span class="price-old" style="font-size:0.75rem;">${formatarMoeda(item.preco)}</span> <strong style="color:var(--verde-escuro)">${formatarMoeda(precoFinal)}</strong>`
+        : `<strong style="color:var(--verde-escuro)">${formatarMoeda(precoFinal)}</strong>`;
+
+      html += `<div class="cart-item">
+                 <div class="cart-item-info">
+                   <h4>${item.nome}</h4>
+                   <div class="cart-item-price">${displayPreco}</div>
+                 </div>
+                 <button class="cart-item-remove" onclick="removerDoCarrinho(${i})">Remover</button>
+               </div>`;
     });
-    tbody.innerHTML = html; document.getElementById('cart-total').innerText = formatarMoeda(total);
+    tbody.innerHTML = html; 
+    document.getElementById('cart-total').innerText = formatarMoeda(total);
   }
 
-  function iniciarCheckout() { if(carrinho.length === 0) return alert("Cesta vazia!"); fecharCarrinho(); if(!userLogged) { document.getElementById('checkout-overlay').classList.add('pending-auth'); abrirAuth(); } else { document.getElementById('checkout-overlay').classList.add('show'); } }
+  function iniciarCheckout() { 
+    if(carrinho.length === 0) return alert("Cesta vazia!"); 
+    fecharCarrinho(); 
+    if(!userLogged) { document.getElementById('checkout-overlay').classList.add('pending-auth'); abrirAuth(); return; } 
+    
+    // Preencher dados no modal
+    document.getElementById('chk-nome').value = userLogged.nome || '';
+    document.getElementById('chk-email').value = userLogged.email || '';
+    document.getElementById('chk-tel').value = userLogged.telefone || '';
+    
+    // Construir resumo
+    const summaryBox = document.getElementById('checkout-summary');
+    let totalCesta = 0;
+    
+    // Agrupamento para exibição no resumo
+    const agrupado = carrinho.reduce((acc, item) => {
+      if(!acc[item.id]) { acc[item.id] = { ...item, q: 0 }; }
+      acc[item.id].q += 1;
+      return acc;
+    }, {});
 
-  function processarCheckout(e) {
+    let summaryHtml = '';
+    Object.values(agrupado).forEach(item => {
+      const precoUnico = getPrecoComDesconto(item);
+      const sub = precoUnico * item.q;
+      totalCesta += sub;
+      summaryHtml += `<div class="summary-item"><span>${item.q}x ${item.nome}</span><span>${formatarMoeda(sub)}</span></div>`;
+    });
+    
+    summaryHtml += `<div class="summary-total"><span>Total</span><span>${formatarMoeda(totalCesta)}</span></div>`;
+    summaryBox.innerHTML = summaryHtml;
+
+    document.getElementById('checkout-overlay').classList.add('show'); 
+  }
+
+  async function processarCheckout(e) {
     e.preventDefault(); 
-    const total = carrinho.reduce((acc, item) => acc + (item.desconto_percentual > 0 ? item.preco * (1 - (item.desconto_percentual/100)) : item.preco), 0);
-    dbOrders.push({ id: gerarId(), cliente: userLogged.email, total: total + 15, frete: 15, itens: carrinho.length, status: 'Aprovado' });
-    carrinho = []; atualizarCarrinho(); fecharTudo(); alert("Pedido finalizado com sucesso!");
+    const btn = document.getElementById('btn-processar-pedido');
+    btn.disabled = true; btn.innerText = "Aguarde...";
+
+    const total = carrinho.reduce((acc, item) => acc + getPrecoComDesconto(item), 0);
+    const pag = document.querySelector('input[name="chk-pag"]:checked').value;
+
+    const payload = {
+      user_id: userLogged.id,
+      cliente_email: document.getElementById('chk-email').value,
+      cliente_nome: document.getElementById('chk-nome').value,
+      cliente_telefone: document.getElementById('chk-tel').value,
+      endereco: document.getElementById('chk-rua').value,
+      complemento: document.getElementById('chk-comp').value,
+      bairro: document.getElementById('chk-bairro').value,
+      cidade: document.getElementById('chk-cidade').value,
+      estado: document.getElementById('chk-uf').value,
+      cep: document.getElementById('chk-cep').value,
+      pagamento: pag,
+      observacoes: document.getElementById('chk-obs').value,
+      total: total,
+      status: 'Aprovado',
+      itens: carrinho
+    };
+
+    try {
+      const { error } = await supabaseClient.from('orders').insert([payload]);
+      if(error) throw new Error(error.message);
+      
+      carrinho = []; atualizarCarrinho(); fecharTudo(); 
+      alert("Pedido finalizado com sucesso!");
+      carregarPedidos(); // Sincroniza tabelas
+    } catch(err) {
+      alert("Erro ao salvar pedido: " + err.message);
+    } finally {
+      btn.disabled = false; btn.innerText = "Confirmar pedido";
+    }
   }
+
+  // ----- DASHBOARDS (CLIENTE E ADMIN) -----
+  async function carregarPedidos() {
+    if(!userLogged) return;
+    
+    if (userLogged.role === 'superadmin') {
+      const { data, error } = await supabaseClient.from('orders').select('*').order('created_at', {ascending: false});
+      if(data) {
+        dbOrders = data;
+        const fat = dbOrders.reduce((acc, o) => acc + Number(o.total), 0);
+        document.getElementById('metric-fat').innerText = formatarMoeda(fat);
+        document.getElementById('metric-pedidos').innerText = dbOrders.length;
+        document.getElementById('metric-tkt').innerText = dbOrders.length ? formatarMoeda(fat/dbOrders.length) : 'R$ 0,00';
+
+        document.getElementById('admin-orders-table').innerHTML = dbOrders.map(o => `
+          <tr>
+            <td style="font-family: monospace; color:var(--texto-suave)">${o.id.split('-')[0].toUpperCase()}</td>
+            <td>${o.cliente_nome}<br><small style="color:var(--texto-suave)">${o.cliente_email}</small></td>
+            <td><strong>${formatarMoeda(o.total)}</strong></td>
+            <td>${o.pagamento}</td>
+            <td><span style="background:var(--areia); padding:4px 8px; border-radius:4px; font-size:0.75rem">${o.status}</span></td>
+          </tr>
+        `).join('') || '<tr><td colspan="5">Nenhum pedido encontrado.</td></tr>';
+      }
+    } else {
+      const { data, error } = await supabaseClient.from('orders').select('*').eq('user_id', userLogged.id).order('created_at', {ascending: false});
+      if(data) {
+        document.getElementById('user-orders-table').innerHTML = data.map(o => `
+          <tr>
+            <td style="font-family: monospace; color:var(--texto-suave)">${o.id.split('-')[0].toUpperCase()}</td>
+            <td>${o.itens?.length || 0}</td>
+            <td><span style="background:var(--areia); padding:4px 8px; border-radius:4px; font-size:0.75rem">${o.status}</span></td>
+            <td><strong>${formatarMoeda(o.total)}</strong></td>
+          </tr>
+        `).join('') || '<tr><td colspan="4">Você ainda não tem pedidos.</td></tr>';
+      }
+    }
+  }
+
+  function mudarAbaUser(aba, btn) { document.querySelectorAll('#user-view .dash-content > div').forEach(d => d.classList.add('hide')); document.getElementById('user-tab-' + aba).classList.remove('hide'); document.querySelectorAll('#user-view .sidebar-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
 
   // ----- VITRINE -----
   function renderizarVitrine() {
@@ -617,7 +774,7 @@ img{display:block; max-width:100%;}
       let precoHtml = `<p class="product-price">${formatarMoeda(p.preco)}</p>`;
       let badgeHtml = '';
       if(p.desconto_percentual > 0) {
-        const precoDesc = p.preco * (1 - (p.desconto_percentual / 100));
+        const precoDesc = getPrecoComDesconto(p);
         precoHtml = `<div class="price-wrap"><span class="price-old">${formatarMoeda(p.preco)}</span><span class="product-price">${formatarMoeda(precoDesc)}</span></div>`;
         badgeHtml = `<div class="badge-desconto">-${p.desconto_percentual}%</div>`;
       }
@@ -701,30 +858,23 @@ img{display:block; max-width:100%;}
     if(!input.value) return;
     
     const { error } = await supabaseClient.from(table).insert([{ nome: input.value }]);
-    if (error) {
-      alert(`Falha de permissão ou erro ao salvar: ${error.message}`);
-      return;
-    }
+    if (error) { alert(`Falha de permissão ou erro ao salvar: ${error.message}`); return; }
     
-    input.value = '';
-    carregarDadosIniciais();
+    input.value = ''; carregarDadosIniciais();
   }
   
   async function alternarStatusConfig(table, id, status) {
     const { error } = await supabaseClient.from(table).update({ is_active: status }).eq('id', id);
-    if(error) alert(error.message);
-    else carregarDadosIniciais();
+    if(error) alert(error.message); else carregarDadosIniciais();
   }
   
   async function excluirConfig(table, id, nome) {
     if(confirm('Tem certeza? Os produtos vinculados perderão esta informação e ficarão na classificação padrão, mas não serão apagados.')) {
-      
       const colunaUpdate = table === 'categories' ? 'categoria' : 'colecao';
       await supabaseClient.from('products').update({ [colunaUpdate]: null }).eq(colunaUpdate, nome);
       
       const { error } = await supabaseClient.from(table).delete().eq('id', id);
-      if(error) alert(error.message);
-      else carregarDadosIniciais();
+      if(error) alert(error.message); else carregarDadosIniciais();
     }
   }
 
@@ -761,11 +911,7 @@ img{display:block; max-width:100%;}
       const fileInput = document.getElementById('prod-imagens');
       const files = fileInput.files;
 
-      if(files.length > 5) { 
-        alert("Máximo de 5 imagens permitidas."); 
-        btn.disabled = false; btn.innerText = "Salvar Produto"; 
-        return; 
-      }
+      if(files.length > 5) { alert("Máximo de 5 imagens permitidas."); btn.disabled = false; btn.innerText = "Salvar Produto"; return; }
 
       let imagensUrl = id ? (dbProducts.find(x => x.id === id)?.imagens || []) : [];
 
@@ -798,36 +944,26 @@ img{display:block; max-width:100%;}
       };
 
       let response;
-      if(id) { 
-        response = await supabaseClient.from('products').update(prodData).eq('id', id).select(); 
-      } else { 
-        response = await supabaseClient.from('products').insert([prodData]).select(); 
-      }
+      if(id) { response = await supabaseClient.from('products').update(prodData).eq('id', id).select(); } 
+      else { response = await supabaseClient.from('products').insert([prodData]).select(); }
 
       if(response.error) throw new Error(`Erro no BD: ${response.error.message}`);
 
-      fecharTudo(); 
-      carregarDadosIniciais();
+      fecharTudo(); carregarDadosIniciais();
 
-    } catch (err) {
-      alert(`ALERTA DE FALHA: ${err.message}`);
-    } finally {
-      btn.disabled = false; 
-      btn.innerText = "Salvar Produto";
-    }
+    } catch (err) { alert(`ALERTA DE FALHA: ${err.message}`);
+    } finally { btn.disabled = false; btn.innerText = "Salvar Produto"; }
   }
 
   async function alternarStatusProduto(id, is_active) {
     const { error } = await supabaseClient.from('products').update({ is_active }).eq('id', id);
-    if(error) alert(error.message);
-    else carregarDadosIniciais();
+    if(error) alert(error.message); else carregarDadosIniciais();
   }
   
   async function excluirProduto(id) {
     if(confirm("Deseja realmente excluir este produto permanentemente?")) {
       const { error } = await supabaseClient.from('products').delete().eq('id', id);
-      if(error) alert(error.message);
-      else carregarDadosIniciais();
+      if(error) alert(error.message); else carregarDadosIniciais();
     }
   }
 </script>
