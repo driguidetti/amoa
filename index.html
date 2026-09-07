@@ -78,7 +78,7 @@ img{display:block; max-width:100%;}
 
 .modal-overlay{position:fixed; inset:0; background: rgba(30,28,25,0.5); z-index: 1000; display:none; align-items:center; justify-content:center; overflow-y:auto; padding: 1rem;}
 .modal-overlay.show{display:flex;}
-.modal{background: var(--fundo); max-width: 600px; width:100%; border-radius: 6px; padding: 2rem 1.8rem; font-family: Arial, sans-serif; max-height: 90vh; overflow-y:auto;}
+.modal{background: var(--fundo); max-width: 650px; width:100%; border-radius: 6px; padding: 2rem 1.8rem; font-family: Arial, sans-serif; max-height: 90vh; overflow-y:auto;}
 .modal h2{font-family: Georgia, serif; margin-bottom: 6px; font-size: 1.5rem; color: var(--verde-escuro);}
 .modal-sub{color: var(--texto-suave); font-size: 0.88rem; margin-bottom: 1.5rem;}
 .form-section-title{font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--terracota); margin: 18px 0 10px; border-bottom:1px solid var(--linha); padding-bottom: 4px;}
@@ -116,8 +116,8 @@ img{display:block; max-width:100%;}
 .metric-card h4 { font-size: 0.75rem; color: var(--texto-suave); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
 .metric-card p { font-size: 1.4rem; color: var(--verde-escuro); font-family: Georgia, serif; font-weight: bold; }
 
-.status-filters { display: flex; gap: 10px; margin-bottom: 1.5rem; overflow-x: auto; padding-bottom: 8px; }
-.status-card { flex: 1; min-width: 130px; background: var(--fundo); border: 1px solid var(--linha); border-radius: 4px; padding: 12px; text-align: center; cursor: pointer; transition: 0.2s; }
+.status-filters { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+.status-card { background: var(--fundo); border: 1px solid var(--linha); border-radius: 4px; padding: 12px; text-align: center; cursor: pointer; transition: 0.2s; }
 .status-card:hover { border-color: var(--verde-escuro); }
 .status-card.active { border-color: var(--verde-escuro); background: var(--verde-escuro); color: white; }
 .status-card h4 { font-size: 0.72rem; text-transform: uppercase; margin-bottom: 4px; font-weight: normal; }
@@ -130,6 +130,7 @@ img{display:block; max-width:100%;}
 .action-link:hover { color: var(--texto); }
 .filter-select { padding: 8px 12px; border: 1px solid var(--linha); border-radius: 4px; font-size: 0.85rem; background: var(--branco); color: var(--texto-suave); font-family: Arial, sans-serif; min-width: 160px;}
 .muted {opacity: 0.5; filter: grayscale(1);}
+.row-erro { opacity: 0.5; filter: grayscale(1); background-color: #f7f7f7; }
 
 .badge-altered { background: var(--terracota); color: white; font-size: 0.65rem; padding: 3px 6px; border-radius: 4px; text-transform: uppercase; font-family: Arial, sans-serif; font-weight: bold; margin-left: 6px; vertical-align: middle;}
 .order-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; font-size: 0.9rem; }
@@ -149,6 +150,7 @@ img{display:block; max-width:100%;}
   .sidebar { width: 100%; flex-direction: row; overflow-x: auto; padding-bottom: 5px; }
   .data-table { display: block; overflow-x: auto; white-space: nowrap; }
   .order-detail-grid { grid-template-columns: 1fr; }
+  .status-filters { grid-template-columns: repeat(2, 1fr); }
 }
 </style>
 </head>
@@ -304,7 +306,7 @@ img{display:block; max-width:100%;}
     <main class="dash-content">
       <div id="user-tab-pedidos">
         <h2 style="font-family: Georgia, serif; color: var(--verde-escuro); margin-bottom: 1.5rem;">Meus Pedidos</h2>
-        <table class="data-table"><thead><tr><th>Pedido</th><th>Itens</th><th>Status</th><th>Total</th></tr></thead><tbody id="user-orders-table"></tbody></table>
+        <table class="data-table"><thead><tr><th>Pedido</th><th>Data</th><th>Itens</th><th>Status</th><th>Total</th><th>Ações</th></tr></thead><tbody id="user-orders-table"></tbody></table>
       </div>
     </main>
   </div>
@@ -340,6 +342,13 @@ img{display:block; max-width:100%;}
       
       <div id="admin-tab-orders" class="hide">
         <h2 style="font-family: Georgia, serif; color: var(--verde-escuro); margin-bottom: 1rem;">Pedidos</h2>
+        
+        <div style="margin-bottom: 1.5rem; display:flex; gap:10px; align-items:center;">
+          <label style="font-size:0.85rem; color:var(--texto-suave);">Filtrar por data:</label>
+          <input type="date" id="admin-date-filter" class="filter-select" onchange="renderAdminOrders()">
+          <button class="btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="document.getElementById('admin-date-filter').value=''; renderAdminOrders();">Limpar</button>
+        </div>
+
         <div class="status-filters">
           <div class="status-card active" onclick="filtrarAdminOrders('Todos', this)"><h4>Todos</h4><p id="count-todos">0</p></div>
           <div class="status-card" onclick="filtrarAdminOrders('Solicitado', this)"><h4>Solicitado</h4><p id="count-solicitado">0</p></div>
@@ -348,8 +357,10 @@ img{display:block; max-width:100%;}
           <div class="status-card" onclick="filtrarAdminOrders('Enviado', this)"><h4>Enviado</h4><p id="count-enviado">0</p></div>
           <div class="status-card" onclick="filtrarAdminOrders('Entregue', this)"><h4>Entregue</h4><p id="count-entregue">0</p></div>
           <div class="status-card" onclick="filtrarAdminOrders('Cancelado', this)"><h4>Cancelado</h4><p id="count-cancelado">0</p></div>
+          <div class="status-card" onclick="filtrarAdminOrders('Erro de cadastro', this)"><h4>Erro</h4><p id="count-erro">0</p></div>
         </div>
-        <table class="data-table"><thead><tr><th>ID</th><th>Cliente</th><th>Total</th><th>Status</th><th>Ações</th></tr></thead><tbody id="admin-orders-table"></tbody></table>
+
+        <table class="data-table"><thead><tr><th>ID</th><th>Data</th><th>Cliente</th><th>Total</th><th>Status</th><th>Ações</th></tr></thead><tbody id="admin-orders-table"></tbody></table>
       </div>
       
       <!-- ABA PRODUTOS -->
@@ -441,6 +452,12 @@ img{display:block; max-width:100%;}
     <p class="modal-sub">Ajuste as quantidades. Caso remova totalmente um item, digite 0. O cliente será notificado da alteração.</p>
     <form id="order-edit-form" onsubmit="salvarEdicaoPedido(event)">
       <input type="hidden" id="edit-order-id">
+      
+      <div style="display:flex; gap:10px; margin-bottom:15px;">
+        <select id="edit-add-prod-select" class="filter-select" style="flex:1;"></select>
+        <button type="button" class="btn-secondary" style="padding:6px 12px" onclick="adicionarItemEdicao()">Incluir Item</button>
+      </div>
+
       <div id="edit-itens-container" style="margin-bottom: 20px;"></div>
       
       <div style="text-align:right; font-size:1.1rem; margin-bottom: 20px;">
@@ -488,7 +505,6 @@ img{display:block; max-width:100%;}
 </div>
 
 <script>
-  // Supabase Config
   const SUPABASE_URL = 'https://stiqoqwdhrdydokjhwcn.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0aXFvcXdkaHJkeWRva2pod2NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NDk3ODksImV4cCI6MjEwNDIyNTc4OX0.nbT9KDHFFBa_X_0392ywPZzHth5QrWtycYWHi2prnx4';
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -497,15 +513,13 @@ img{display:block; max-width:100%;}
   let carrinho = JSON.parse(localStorage.getItem('amoa_carrinho')) || [];
   let dbOrders = []; 
   let currentAdminStatusFilter = 'Todos';
-  let originalOrderItensGrouped = []; // Auxiliar para edicao
+  let originalOrderItensGrouped = [];
   
-  // Cache de Banco de Dados
   let dbProducts = [];
   let dbCategories = [];
   let dbCollections = [];
   let activeImageIndex = {};
   
-  // Filtros Ativos
   let filtroCatAtivo = '';
   let filtroColAtivo = '';
 
@@ -513,9 +527,8 @@ img{display:block; max-width:100%;}
   const agruparItens = (itensArray) => Object.values(itensArray.reduce((acc, item) => { if(!acc[item.id]) acc[item.id] = { ...item, q: 0 }; acc[item.id].q += 1; return acc; }, {}));
   const getPrecoComDesconto = (item) => (item.desconto_percentual > 0) ? item.preco * (1 - (item.desconto_percentual/100)) : item.preco;
 
-  atualizarCarrinho(); // Garante o número do contador correto ao carregar a página
+  atualizarCarrinho(); 
 
-  // INIT COM LISTENER DE SESSÃO ESTÁVEL
   supabaseClient.auth.onAuthStateChange(async (event, session) => {
     if (session) {
       const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
@@ -526,14 +539,9 @@ img{display:block; max-width:100%;}
         nome: profile?.nome || session.user.email.split('@')[0],
         telefone: profile?.telefone || ''
       };
-      atualizarHeader();
-      resetTimer(); 
-      carregarDadosIniciais();
-      carregarPedidos();
+      atualizarHeader(); resetTimer(); carregarDadosIniciais(); carregarPedidos();
     } else {
-      userLogged = null;
-      atualizarHeader();
-      carregarDadosIniciais();
+      userLogged = null; atualizarHeader(); carregarDadosIniciais();
     }
   });
 
@@ -553,8 +561,7 @@ img{display:block; max-width:100%;}
     if(resCol.data) dbCollections = resCol.data;
     if(resProd.data) dbProducts = resProd.data;
     
-    preencherSelects();
-    renderizarVitrine();
+    preencherSelects(); renderizarVitrine();
     if(userLogged?.role === 'superadmin') { sincronizarAdminConfig(); sincronizarAdminProdutos(); }
   }
 
@@ -701,15 +708,14 @@ img{display:block; max-width:100%;}
       if(data) {
         dbOrders = data;
         
-        let validOrders = dbOrders.filter(o => o.status !== 'Cancelado');
+        let validOrders = dbOrders.filter(o => o.status !== 'Cancelado' && o.status !== 'Erro de cadastro');
         let canceladosOrders = dbOrders.filter(o => o.status === 'Cancelado');
         let fat = validOrders.reduce((acc, o) => acc + Number(o.total), 0);
         let perda = canceladosOrders.reduce((acc, o) => acc + Number(o.total), 0);
         let countFinalizados = dbOrders.filter(o => o.status === 'Entregue').length;
         let countAlterados = dbOrders.filter(o => o.is_altered === true).length;
         
-        // Métricas
-        document.getElementById('metric-pedidos').innerText = dbOrders.length;
+        document.getElementById('metric-pedidos').innerText = validOrders.length;
         document.getElementById('metric-fat').innerText = formatarMoeda(fat);
         document.getElementById('metric-tkt').innerText = validOrders.length ? formatarMoeda(fat/validOrders.length) : 'R$ 0,00';
         document.getElementById('metric-finalizados').innerText = countFinalizados;
@@ -717,7 +723,6 @@ img{display:block; max-width:100%;}
         document.getElementById('metric-alterados').innerText = countAlterados;
         document.getElementById('metric-perda').innerText = formatarMoeda(perda);
         
-        // Badges Contadores de Filtro
         document.getElementById('count-todos').innerText = dbOrders.length;
         document.getElementById('count-solicitado').innerText = dbOrders.filter(o=>o.status==='Solicitado').length;
         document.getElementById('count-aprovado').innerText = dbOrders.filter(o=>o.status==='Aprovado').length;
@@ -725,20 +730,26 @@ img{display:block; max-width:100%;}
         document.getElementById('count-enviado').innerText = dbOrders.filter(o=>o.status==='Enviado').length;
         document.getElementById('count-entregue').innerText = countFinalizados;
         document.getElementById('count-cancelado').innerText = canceladosOrders.length;
+        document.getElementById('count-erro').innerText = dbOrders.filter(o=>o.status==='Erro de cadastro').length;
 
         renderAdminOrders();
       }
     } else {
       const { data, error } = await supabaseClient.from('orders').select('*').eq('user_id', userLogged.id).order('created_at', {ascending: false});
       if(data) {
-        document.getElementById('user-orders-table').innerHTML = data.map(o => `
-          <tr>
+        dbOrders = data; 
+        document.getElementById('user-orders-table').innerHTML = dbOrders.map(o => {
+          const dataF = new Date(o.created_at).toLocaleDateString('pt-BR');
+          return `
+          <tr class="${o.status === 'Erro de cadastro' ? 'row-erro' : ''}">
             <td style="font-family: monospace; color:var(--texto-suave)">${o.id.split('-')[0].toUpperCase()}</td>
+            <td>${dataF}</td>
             <td>${o.itens?.length || 0}</td>
-            <td><span style="background:var(--areia); padding:4px 8px; border-radius:4px; font-size:0.75rem">${o.status}</span> ${o.is_altered ? '<span class="badge-altered">Pedido Alterado</span>' : ''}</td>
+            <td><span style="background:var(--areia); padding:4px 8px; border-radius:4px; font-size:0.75rem">${o.status}</span> ${o.is_altered ? '<span class="badge-altered">Alterado</span>' : ''}</td>
             <td><strong>${formatarMoeda(o.total)}</strong></td>
-          </tr>
-        `).join('') || '<tr><td colspan="4">Você ainda não tem pedidos.</td></tr>';
+            <td><button class="action-link" onclick="abrirDetalhePedido('${o.id}')">Detalhes</button></td>
+          </tr>`
+        }).join('') || '<tr><td colspan="6">Você ainda não tem pedidos.</td></tr>';
       }
     }
   }
@@ -751,15 +762,27 @@ img{display:block; max-width:100%;}
   }
 
   function renderAdminOrders() {
-    let list = currentAdminStatusFilter === 'Todos' ? dbOrders : dbOrders.filter(o => o.status === currentAdminStatusFilter);
-    const selectsArray = ['Solicitado', 'Aprovado', 'Em separação', 'Enviado', 'Entregue', 'Cancelado'];
+    let list = dbOrders;
+    const filterDate = document.getElementById('admin-date-filter').value;
+    
+    if(currentAdminStatusFilter !== 'Todos') {
+      list = list.filter(o => o.status === currentAdminStatusFilter);
+    }
+    
+    if(filterDate) {
+      list = list.filter(o => o.created_at.startsWith(filterDate));
+    }
+    
+    const selectsArray = ['Solicitado', 'Aprovado', 'Em separação', 'Enviado', 'Entregue', 'Cancelado', 'Erro de cadastro'];
     
     document.getElementById('admin-orders-table').innerHTML = list.map(o => {
       let optionsHTML = selectsArray.map(st => `<option value="${st}" ${o.status===st?'selected':''}>${st}</option>`).join('');
       let selectHTML = `<select class="filter-select" style="padding:4px 6px; min-width:110px;" onchange="atualizarStatusPedido('${o.id}', this.value)">${optionsHTML}</select>`;
-      
-      return `<tr>
+      const dataF = new Date(o.created_at).toLocaleDateString('pt-BR');
+
+      return `<tr class="${o.status === 'Erro de cadastro' ? 'row-erro' : ''}">
         <td style="font-family: monospace; color:var(--texto-suave)">${o.id.split('-')[0].toUpperCase()} ${o.is_altered ? '<br><span class="badge-altered" style="margin-left:0">Alterado</span>' : ''}</td>
+        <td>${dataF}</td>
         <td>${o.cliente_nome}<br><small style="color:var(--texto-suave)">${o.cliente_email}</small></td>
         <td><strong>${formatarMoeda(o.total)}</strong></td>
         <td>${selectHTML}</td>
@@ -768,7 +791,7 @@ img{display:block; max-width:100%;}
           <button class="action-link" onclick="abrirEditarPedido('${o.id}')">Alterar</button>
         </td>
       </tr>`;
-    }).join('') || '<tr><td colspan="5">Nenhum pedido correspondente.</td></tr>';
+    }).join('') || '<tr><td colspan="6">Nenhum pedido correspondente.</td></tr>';
   }
 
   async function atualizarStatusPedido(id, novoStatus) {
@@ -778,7 +801,8 @@ img{display:block; max-width:100%;}
 
   function abrirDetalhePedido(id) {
     const p = dbOrders.find(o => o.id === id); if(!p) return;
-    document.getElementById('det-id').innerText = "#" + p.id.split('-')[0].toUpperCase();
+    const dataPedido = new Date(p.created_at).toLocaleDateString('pt-BR');
+    document.getElementById('det-id').innerText = "#" + p.id.split('-')[0].toUpperCase() + " - " + dataPedido;
     document.getElementById('det-altered').classList.toggle('hide', !p.is_altered);
     
     document.getElementById('det-nome').innerText = p.cliente_nome;
@@ -797,11 +821,7 @@ img{display:block; max-width:100%;}
     document.getElementById('order-detail-modal').classList.add('show');
   }
 
-  function abrirEditarPedido(id) {
-    const p = dbOrders.find(o => o.id === id); if(!p) return;
-    document.getElementById('edit-order-id').value = id;
-    originalOrderItensGrouped = agruparItens(p.itens || []);
-    
+  function renderizarItensEdicao() {
     const container = document.getElementById('edit-itens-container');
     container.innerHTML = originalOrderItensGrouped.map(item => `
       <div class="edit-item-row">
@@ -809,9 +829,34 @@ img{display:block; max-width:100%;}
         <div><input type="number" class="edit-item-input" data-id="${item.id}" value="${item.q}" min="0" oninput="recalcularEdicaoPedido()"></div>
       </div>
     `).join('');
-    
     recalcularEdicaoPedido();
+  }
+
+  function abrirEditarPedido(id) {
+    const p = dbOrders.find(o => o.id === id); if(!p) return;
+    document.getElementById('edit-order-id').value = id;
+    
+    // Popula o select de produtos para incluir novos itens
+    document.getElementById('edit-add-prod-select').innerHTML = '<option value="">-- Selecione um produto --</option>' + dbProducts.filter(x => x.is_active).map(x => `<option value="${x.id}">${x.nome}</option>`).join('');
+
+    originalOrderItensGrouped = agruparItens(p.itens || []);
+    renderizarItensEdicao();
     document.getElementById('order-edit-modal').classList.add('show');
+  }
+
+  function adicionarItemEdicao() {
+    const select = document.getElementById('edit-add-prod-select');
+    const prodId = select.value;
+    if(!prodId) return;
+    const prod = dbProducts.find(p => p.id === prodId);
+    if(!prod) return;
+    
+    let existe = originalOrderItensGrouped.find(i => i.id === prodId);
+    if(existe) { existe.q += 1; } 
+    else { originalOrderItensGrouped.push({...prod, q: 1}); }
+    
+    select.value = '';
+    renderizarItensEdicao();
   }
 
   function recalcularEdicaoPedido() {
@@ -838,7 +883,6 @@ img{display:block; max-width:100%;}
       let prodId = input.getAttribute('data-id');
       let prodData = originalOrderItensGrouped.find(i => i.id === prodId);
       if(prodData) {
-        // Remove a propriedade agregada 'q' para montar o raw array exato
         const { q, ...rawProd } = prodData;
         for(let j=0; j<qty; j++) { novoArrayItens.push(rawProd); }
         novoTotal += getPrecoComDesconto(prodData) * qty;
