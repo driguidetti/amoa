@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Amoá</title>
+<!-- INCLUA O LINK DO SEU FAVICON ABAIXO -->
+<link rel="icon" type="image/png" href="https://stiqoqwdhrdydokjhwcn.supabase.co/storage/v1/object/public/assets/favicon.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
 <style>
@@ -23,6 +25,7 @@ img{display:block; max-width:100%;}
 /* HEADER & HERO */
 .header{background: var(--branco); border-bottom: 1px solid var(--linha); padding: 0.9rem 1.5rem; display:flex; justify-content:space-between; align-items:center; position: sticky; top:0; z-index: 500;}
 .header-right{display:flex; align-items:center; gap: 18px;}
+.brand-logo {height: 35px; width: auto; object-fit: contain;}
 .auth-link{font-size: 0.75rem; color: var(--texto-suave); text-decoration:none; letter-spacing: 0.03em; font-family: Arial, sans-serif; text-transform: uppercase; font-weight: bold;}
 .auth-link:hover{color: var(--verde-escuro);}
 .cart-container{position:relative; cursor:pointer; color: var(--texto); background:none; border:none;}
@@ -153,7 +156,7 @@ img{display:block; max-width:100%;}
 .img-action-btn:hover { background: rgba(0,0,0,0.9); }
 
 /* MISC */
-.whatsapp-float{ position:fixed; bottom:20px; right:20px; background:#25D366; color:white; font-size:30px; width:56px; height:56px; border-radius:50%; z-index:400; display:flex; align-items:center; justify-content:center; box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
+.whatsapp-float{ position:fixed; bottom:20px; right:20px; background:#25D366; color:white; font-size:30px; width:56px; height:56px; border-radius:50%; z-index:400; display:flex; align-items:center; justify-content:center; box-shadow: 0 3px 10px rgba(0,0,0,0.2); transition: opacity 0.3s;}
 .footer{background: var(--verde-escuro); color:white; text-align:center; padding: 2.2rem 1rem; margin-top: 3rem; font-family: Arial, sans-serif;}
 .hide{display:none !important;}
 
@@ -173,7 +176,10 @@ img{display:block; max-width:100%;}
 <!-- STOREFRONT -->
 <div id="store-view">
   <header class="header">
-    <div><h2 style="color:var(--verde-escuro); font-style:italic">Amoá</h2></div>
+    <div>
+      <!-- INCLUA O LINK DA SUA LOGO ABAIXO -->
+      <img src="https://stiqoqwdhrdydokjhwcn.supabase.co/storage/v1/object/public/assets/logo.png" alt="Amoá" class="brand-logo">
+    </div>
     <div class="header-right">
       <button class="auth-link" style="background:none; border:none; cursor:pointer;" id="header-auth-btn" onclick="abrirAuth()">Login</button>
       <button class="cart-container" onclick="abrirCarrinho()">
@@ -202,7 +208,6 @@ img{display:block; max-width:100%;}
     <div style="text-align:center; grid-column: 1/-1; padding: 40px; color: var(--texto-suave);">Carregando produtos...</div>
   </main>
 
-  <a href="https://wa.me/5511977955890" class="whatsapp-float" target="_blank"><i class="ph-fill ph-whatsapp-logo"></i></a>
   <footer class="footer">
     <p>Amoá &mdash; feito à mão, com cuidado.</p>
     <p style="margin-top:10px; font-size:0.78rem; opacity:0.6;">Criado pela Murphy Company</p>
@@ -313,7 +318,12 @@ img{display:block; max-width:100%;}
 
 <!-- USER DASHBOARD -->
 <div id="user-view" class="hide" style="min-height: 100vh; background: var(--fundo);">
-  <header class="header"><div><h2 style="color:var(--verde-escuro); font-style:italic">Amoá</h2></div><div class="header-right"><button class="auth-link" style="background:none; border:none;" onclick="fazerLogout()">Sair da Conta</button></div></header>
+  <header class="header">
+    <div>
+      <img src="COLE_O_LINK_DA_SUA_LOGO_AQUI" alt="Amoá" class="brand-logo">
+    </div>
+    <div class="header-right"><button class="auth-link" style="background:none; border:none;" onclick="fazerLogout()">Sair da Conta</button></div>
+  </header>
   <div class="dashboard-container">
     <aside class="sidebar">
       <button class="sidebar-btn active" onclick="mudarAbaUser('pedidos', this)">Meus Pedidos</button>
@@ -342,7 +352,10 @@ img{display:block; max-width:100%;}
 <!-- ADMIN DASHBOARD -->
 <div id="admin-view" class="hide" style="min-height:100vh; background: var(--fundo);">
   <header class="header">
-    <div><h2 style="color:var(--verde-escuro); font-style:italic">Amoá Admin</h2></div>
+    <div style="display:flex; align-items:center; gap: 8px;">
+      <img src="COLE_O_LINK_DA_SUA_LOGO_AQUI" alt="Amoá" class="brand-logo">
+      <span style="font-style:italic; font-weight:bold; color:var(--texto-suave); font-size:0.9rem;">Admin</span>
+    </div>
     <div class="header-right"><button class="auth-link" style="background:none; border:none; cursor:pointer;" onclick="fazerLogout()">Sair do Sistema</button></div>
   </header>
   <div class="dashboard-container">
@@ -597,6 +610,11 @@ img{display:block; max-width:100%;}
   </div>
 </div>
 
+<!-- WHATSAPP GLOBAL -->
+<a href="https://wa.me/5511977955890" id="whatsapp-btn" class="whatsapp-float" target="_blank">
+  <i class="ph-fill ph-whatsapp-logo"></i>
+</a>
+
 <script>
   const SUPABASE_URL = 'https://stiqoqwdhrdydokjhwcn.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0aXFvcXdkaHJkeWRva2pod2NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NDk3ODksImV4cCI6MjEwNDIyNTc4OX0.nbT9KDHFFBa_X_0392ywPZzHth5QrWtycYWHi2prnx4';
@@ -617,7 +635,7 @@ img{display:block; max-width:100%;}
   let filtroCatAtivo = '';
   let filtroColAtivo = '';
   
-  let currentProductImages = []; // Para preview e reordenação
+  let currentProductImages = []; 
 
   const formatarMoeda = (valor) => Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const agruparItens = (itensArray) => Object.values(itensArray.reduce((acc, item) => { if(!acc[item.id]) acc[item.id] = { ...item, q: 0 }; acc[item.id].q += 1; return acc; }, {}));
@@ -684,7 +702,7 @@ img{display:block; max-width:100%;}
   function validarEmailDominio(email) { return /^[^\s@]+@(gmail\.com|hotmail\.com|outlook\.com|yahoo\.com|icloud\.com|live\.com|[^\s@]+\.com(\.br)?)$/i.test(email); }
   function togglePw(id, btn) { const i = document.getElementById(id); const icon = btn.querySelector('i'); if(i.type === 'password'){ i.type = 'text'; icon.classList.replace('ph-eye','ph-eye-slash'); } else { i.type = 'password'; icon.classList.replace('ph-eye-slash','ph-eye'); } }
 
-  function voltarParaLoja() { document.getElementById('admin-view').classList.add('hide'); document.getElementById('user-view').classList.add('hide'); document.getElementById('store-view').classList.remove('hide'); }
+  function voltarParaLoja() { document.getElementById('admin-view').classList.add('hide'); document.getElementById('user-view').classList.add('hide'); document.getElementById('store-view').classList.remove('hide'); document.getElementById('whatsapp-btn').classList.remove('hide'); }
 
   function abrirAuth() { document.getElementById('auth-overlay').classList.add('show'); voltarParaEmail(); }
   function fecharAuth() { document.getElementById('auth-overlay').classList.remove('show'); }
@@ -724,8 +742,8 @@ img{display:block; max-width:100%;}
   function atualizarHeader() {
     const btn = document.getElementById('header-auth-btn');
     if(!userLogged) { btn.innerText = "Login"; btn.onclick = abrirAuth; } 
-    else if(userLogged.role === 'superadmin') { btn.innerText = "Painel Admin"; btn.onclick = () => { voltarParaLoja(); document.getElementById('store-view').classList.add('hide'); document.getElementById('admin-view').classList.remove('hide'); sincronizarAdminConfig(); sincronizarAdminProdutos(); carregarPedidos(); }; } 
-    else { btn.innerText = "Minha Conta"; btn.onclick = () => { voltarParaLoja(); document.getElementById('store-view').classList.add('hide'); document.getElementById('user-view').classList.remove('hide'); carregarPedidos(); carregarEnderecos(); }; }
+    else if(userLogged.role === 'superadmin') { btn.innerText = "Painel Admin"; btn.onclick = () => { voltarParaLoja(); document.getElementById('store-view').classList.add('hide'); document.getElementById('admin-view').classList.remove('hide'); document.getElementById('whatsapp-btn').classList.add('hide'); sincronizarAdminConfig(); sincronizarAdminProdutos(); carregarPedidos(); }; } 
+    else { btn.innerText = "Minha Conta"; btn.onclick = () => { voltarParaLoja(); document.getElementById('store-view').classList.add('hide'); document.getElementById('user-view').classList.remove('hide'); document.getElementById('whatsapp-btn').classList.remove('hide'); carregarPedidos(); carregarEnderecos(); }; }
   }
 
   function fazerLogout() { supabaseClient.auth.signOut(); userLogged = null; clearTimeout(timeoutID); voltarParaLoja(); atualizarHeader(); }
