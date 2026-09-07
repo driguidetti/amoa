@@ -221,7 +221,8 @@ img{display:block; max-width:100%;}
   <div class="dashboard-container">
     <aside class="sidebar">
       <button class="sidebar-btn active" onclick="mudarAbaUser('pedidos', this)">Meus Pedidos</button>
-      <button class="sidebar-btn" onclick="fazerLogout()">Voltar à Loja</button>
+      <button class="sidebar-btn" onclick="voltarParaLoja()">Voltar à Loja</button>
+      <button class="sidebar-btn" style="color:var(--erro)" onclick="fazerLogout()">Sair da Conta</button>
     </aside>
     <main class="dash-content">
       <div id="user-tab-pedidos"><h2 style="font-family: Georgia, serif; color: var(--verde-escuro); margin-bottom: 1.5rem;">Meus Pedidos</h2><table class="data-table"><thead><tr><th>Pedido</th><th>Itens</th><th>Status</th><th>Total</th></tr></thead><tbody id="user-orders-table"></tbody></table></div>
@@ -241,6 +242,7 @@ img{display:block; max-width:100%;}
       <button class="sidebar-btn" onclick="mudarAbaAdmin('orders', this)">Gestão de Pedidos</button>
       <button class="sidebar-btn" onclick="mudarAbaAdmin('products', this)">Produtos & Vitrine</button>
       <button class="sidebar-btn" onclick="mudarAbaAdmin('categorias', this)">Categorias & Coleções</button>
+      <button class="sidebar-btn" style="color:var(--terracota); margin-top:10px; border-color:var(--terracota);" onclick="voltarParaLoja()">Voltar à Loja</button>
     </aside>
     <main class="dash-content">
       <div id="admin-tab-metrics">
@@ -432,6 +434,13 @@ img{display:block; max-width:100%;}
   }
   function validarEmailDominio(email) { return /^[^\s@]+@(gmail\.com|hotmail\.com|outlook\.com|yahoo\.com|icloud\.com|live\.com|[^\s@]+\.com(\.br)?)$/i.test(email); }
   function togglePw(id, btn) { const i = document.getElementById(id); const icon = btn.querySelector('i'); if(i.type === 'password'){ i.type = 'text'; icon.classList.replace('ph-eye','ph-eye-slash'); } else { i.type = 'password'; icon.classList.replace('ph-eye-slash','ph-eye'); } }
+
+  // ----- NAVEGAÇÃO ENTRE TELAS -----
+  function voltarParaLoja() {
+    document.getElementById('admin-view').classList.add('hide');
+    document.getElementById('user-view').classList.add('hide');
+    document.getElementById('store-view').classList.remove('hide');
+  }
 
   // ----- AUTENTICAÇÃO -----
   function abrirAuth() { document.getElementById('auth-overlay').classList.add('show'); voltarParaEmail(); }
