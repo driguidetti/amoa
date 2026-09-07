@@ -259,7 +259,7 @@ img{display:block; max-width:100%;}
             <option value="AC">AC</option><option value="AL">AL</option><option value="AP">AP</option><option value="AM">AM</option><option value="BA">BA</option><option value="CE">CE</option><option value="DF">DF</option><option value="ES">ES</option><option value="GO">GO</option><option value="MA">MA</option><option value="MT">MT</option><option value="MS">MS</option><option value="MG">MG</option><option value="PA">PA</option><option value="PB">PB</option><option value="PR">PR</option><option value="PE">PE</option><option value="PI">PI</option><option value="RJ">RJ</option><option value="RN">RN</option><option value="RS">RS</option><option value="RO">RO</option><option value="RR">RR</option><option value="SC">SC</option><option value="SP">SP</option><option value="SE">SE</option><option value="TO">TO</option>
           </select>
         </div>
-        <div class="form-group"><label>CEP *</label><input type="text" id="chk-cep" required></div>
+        <div class="form-group"><label>CEP *</label><input type="text" id="chk-cep" required oninput="maskCEP(event)" maxlength="9" placeholder="00000-000"></div>
       </div>
       
       <div class="form-section-title">Pagamento</div>
@@ -416,7 +416,7 @@ img{display:block; max-width:100%;}
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   let userLogged = null; 
-  let carrinho = [];
+  let carrinho = JSON.parse(localStorage.getItem('amoa_carrinho')) || [];
   let dbOrders = []; 
   
   // Cache de Banco de Dados
@@ -430,6 +430,8 @@ img{display:block; max-width:100%;}
   let filtroColAtivo = '';
 
   const formatarMoeda = (valor) => Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+  atualizarCarrinho(); // Garante o número do contador correto ao carregar a página
 
   // INIT COM LISTENER DE SESSÃO ESTÁVEL
   supabaseClient.auth.onAuthStateChange(async (event, session) => {
@@ -527,6 +529,13 @@ img{display:block; max-width:100%;}
     if (v.length > 4) v = v.replace(/^(\d{4,5})(\d)/g, '$1-$2');
     event.target.value = v;
   }
+
+  function maskCEP(event) {
+    let v = event.target.value.replace(/\D/g, '');
+    if (v.length > 8) v = v.slice(0, 8);
+    if (v.length > 5) v = v.replace(/^(\d{5})(\d)/, '$1-$2');
+    event.target.value = v;
+  }
   
   function validarEmailDominio(email) { return /^[^\s@]+@(gmail\.com|hotmail\.com|outlook\.com|yahoo\.com|icloud\.com|live\.com|[^\s@]+\.com(\.br)?)$/i.test(email); }
   function togglePw(id, btn) { const i = document.getElementById(id); const icon = btn.querySelector('i'); if(i.type === 'password'){ i.type = 'text'; icon.classList.replace('ph-eye','ph-eye-slash'); } else { i.type = 'password'; icon.classList.replace('ph-eye-slash','ph-eye'); } }
@@ -612,8 +621,9 @@ img{display:block; max-width:100%;}
   }
 
   // ----- CARRINHO E CHECKOUT -----
-  function adicionarAoCarrinho(id) { const prod = dbProducts.find(p => p.id === id); if(prod) carrinho.push(prod); atualizarCarrinho(); abrirCarrinho(); }
-  function removerDoCarrinho(index) { carrinho.splice(index, 1); atualizarCarrinho(); }
+  function salvarCarrinhoLocal() { localStorage.setItem('amoa_carrinho', JSON.stringify(carrinho)); }
+  function adicionarAoCarrinho(id) { const prod = dbProducts.find(p => p.id === id); if(prod) { carrinho.push(prod); salvarCarrinhoLocal(); atualizarCarrinho(); abrirCarrinho(); } }
+  function removerDoCarrinho(index) { carrinho.splice(index, 1); salvarCarrinhoLocal(); atualizarCarrinho(); }
   function abrirCarrinho() { document.getElementById('overlay').classList.add('show'); document.getElementById('drawer').classList.add('show'); }
   function fecharCarrinho() { document.getElementById('drawer').classList.remove('show'); document.getElementById('overlay').classList.remove('show'); }
   function fecharTudo() { fecharCarrinho(); document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('show')); }
@@ -727,7 +737,7 @@ img{display:block; max-width:100%;}
       const { error } = await supabaseClient.from('orders').insert([payload]);
       if(error) throw new Error(error.message);
       
-      carrinho = []; atualizarCarrinho(); fecharTudo(); 
+      carrinho = []; salvarCarrinhoLocal(); atualizarCarrinho(); fecharTudo(); 
       alert("Pedido finalizado com sucesso!");
       carregarPedidos(); // Sincroniza tabelas
     } catch(err) {
