@@ -81,14 +81,14 @@ img{display:block; max-width:100%;}
 .modal{background: var(--fundo); max-width: 650px; width:100%; border-radius: 6px; padding: 2rem 1.8rem; font-family: Arial, sans-serif; max-height: 90vh; overflow-y:auto;}
 .modal h2{font-family: Georgia, serif; margin-bottom: 6px; font-size: 1.5rem; color: var(--verde-escuro);}
 .modal-sub{color: var(--texto-suave); font-size: 0.88rem; margin-bottom: 1.5rem;}
-.form-section-title{font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--terracota); margin: 18px 0 10px; border-bottom:1px solid var(--linha); padding-bottom: 4px;}
+.form-section-title{font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--terracota); margin: 18px 0 10px; border-bottom:1px solid var(--linha); padding-bottom: 4px; display: flex; justify-content: space-between; align-items: baseline;}
 .form-row{display:flex; gap:10px;}
 .form-group{margin-bottom: 14px; flex:1;}
 .form-group label{display:block; font-size: 0.72rem; color: var(--texto-suave); margin-bottom: 4px; text-transform:uppercase; letter-spacing:0.03em;}
 .form-group input, .form-group select, .form-group textarea{width:100%; padding: 10px 12px; border:1px solid var(--linha); border-radius:4px; font-size:0.9rem; background: white;}
 .modal-actions{display:flex; gap:10px; margin-top: 1.5rem;}
-.btn-secondary{flex:1; background:white; border:1px solid var(--linha); padding:12px; border-radius:4px; color:var(--texto-suave); font-size:0.95rem; text-align:center; cursor:pointer;}
-.btn-primary{flex:2; background: var(--verde-escuro); color:white; border:none; padding:12px; border-radius:4px; font-size:0.95rem; cursor:pointer; text-align:center;}
+.btn-secondary{flex:1; background:white; border:1px solid var(--linha); padding:12px; border-radius:4px; color:var(--texto-suave); font-size:0.95rem; text-align:center; cursor:pointer; text-decoration: none;}
+.btn-primary{flex:2; background: var(--verde-escuro); color:white; border:none; padding:12px; border-radius:4px; font-size:0.95rem; cursor:pointer; text-align:center; text-decoration: none;}
 .btn-primary:disabled{opacity: 0.6; cursor:not-allowed;}
 .pw-wrap { position: relative; }
 .pw-toggle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--texto-suave); font-size: 1.1rem; cursor: pointer; }
@@ -137,6 +137,20 @@ img{display:block; max-width:100%;}
 .order-detail-box { border: 1px solid var(--linha); padding: 12px; border-radius: 4px; background: white; }
 .edit-item-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed var(--linha); font-size:0.9rem;}
 .edit-item-row input { width: 60px; text-align: center; padding: 6px; border: 1px solid var(--linha); border-radius:4px;}
+
+.address-card { border: 1px solid var(--linha); border-radius: 4px; padding: 15px; background: white; position: relative; margin-bottom: 15px; }
+.address-card.main { border-color: var(--verde-escuro); }
+.address-card.main::before { content: 'Principal'; position: absolute; top: 10px; right: 10px; background: var(--verde-escuro); color: white; font-size: 0.65rem; padding: 3px 6px; border-radius: 4px; text-transform: uppercase; font-weight: bold; }
+
+.catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; max-height: 50vh; overflow-y: auto; padding-right: 5px; }
+.catalog-item { border: 1px solid var(--linha); border-radius: 4px; padding: 10px; display: flex; flex-direction: column; background: white; }
+.catalog-item h4 { font-size: 0.85rem; margin-bottom: 5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.img-preview-row { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; }
+.img-preview-box { width: 80px; height: 80px; position: relative; border: 1px solid var(--linha); border-radius: 4px; flex-shrink: 0; background: #eee; }
+.img-preview-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
+.img-action-btn { position: absolute; background: rgba(0,0,0,0.6); color: white; border: none; font-size: 10px; width: 22px; height: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+.img-action-btn:hover { background: rgba(0,0,0,0.9); }
 
 /* MISC */
 .whatsapp-float{ position:fixed; bottom:20px; right:20px; background:#25D366; color:white; font-size:30px; width:56px; height:56px; border-radius:50%; z-index:400; display:flex; align-items:center; justify-content:center; box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
@@ -256,7 +270,10 @@ img{display:block; max-width:100%;}
       </div>
       <div class="form-group" style="margin-top: -5px;"><label>E-mail *</label><input type="email" id="chk-email" required></div>
 
-      <div class="form-section-title">Entrega</div>
+      <div class="form-section-title">
+        Entrega
+        <button type="button" class="action-link" style="margin:0" onclick="abrirModalEscolherEndereco()">Meus Endereços Salvos</button>
+      </div>
       <div class="form-row">
         <div class="form-group" style="flex:3"><label>Endereço (Rua/Av) *</label><input type="text" id="chk-rua" required></div>
         <div class="form-group" style="flex:1"><label>Número *</label><input type="text" id="chk-numero" required></div>
@@ -300,6 +317,7 @@ img{display:block; max-width:100%;}
   <div class="dashboard-container">
     <aside class="sidebar">
       <button class="sidebar-btn active" onclick="mudarAbaUser('pedidos', this)">Meus Pedidos</button>
+      <button class="sidebar-btn" onclick="mudarAbaUser('enderecos', this)">Meus Endereços</button>
       <button class="sidebar-btn" onclick="voltarParaLoja()">Voltar à Loja</button>
       <button class="sidebar-btn" style="color:var(--erro)" onclick="fazerLogout()">Sair da Conta</button>
     </aside>
@@ -307,6 +325,15 @@ img{display:block; max-width:100%;}
       <div id="user-tab-pedidos">
         <h2 style="font-family: Georgia, serif; color: var(--verde-escuro); margin-bottom: 1.5rem;">Meus Pedidos</h2>
         <table class="data-table"><thead><tr><th>Pedido</th><th>Data</th><th>Itens</th><th>Status</th><th>Total</th><th>Ações</th></tr></thead><tbody id="user-orders-table"></tbody></table>
+      </div>
+
+      <!-- ABA ENDEREÇOS CLIENTE -->
+      <div id="user-tab-enderecos" class="hide">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
+          <h2 style="font-family: Georgia, serif; color: var(--verde-escuro);">Meus Endereços</h2>
+          <button class="btn-primary" style="padding: 8px 16px; font-size: 0.85rem;" onclick="abrirModalEndereco()">+ Novo Endereço</button>
+        </div>
+        <div id="user-address-list"></div>
       </div>
     </main>
   </div>
@@ -440,7 +467,7 @@ img{display:block; max-width:100%;}
     </div>
 
     <div class="modal-actions">
-      <button type="button" class="btn-secondary" onclick="fecharTudo()">Fechar Detalhes</button>
+      <button type="button" class="btn-secondary" onclick="fecharModalEspecifico('order-detail-modal')">Fechar Detalhes</button>
     </div>
   </div>
 </div>
@@ -453,9 +480,8 @@ img{display:block; max-width:100%;}
     <form id="order-edit-form" onsubmit="salvarEdicaoPedido(event)">
       <input type="hidden" id="edit-order-id">
       
-      <div style="display:flex; gap:10px; margin-bottom:15px;">
-        <select id="edit-add-prod-select" class="filter-select" style="flex:1;"></select>
-        <button type="button" class="btn-secondary" style="padding:6px 12px" onclick="adicionarItemEdicao()">Incluir Item</button>
+      <div style="margin-bottom:15px;">
+        <button type="button" class="btn-secondary" style="width:100%" onclick="abrirModalCatalogoInclusao()">+ Incluir Produto</button>
       </div>
 
       <div id="edit-itens-container" style="margin-bottom: 20px;"></div>
@@ -468,6 +494,21 @@ img{display:block; max-width:100%;}
         <button type="submit" class="btn-primary" id="btn-save-edit">Salvar Alterações</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- MODAL: CATÁLOGO DE INCLUSÃO DE PRODUTO (ADMIN) -->
+<div class="modal-overlay" id="catalog-add-modal" style="z-index: 1010;">
+  <div class="modal" style="max-width: 800px;">
+    <h2>Incluir Produto no Pedido</h2>
+    <div style="display:flex; gap: 10px; margin-bottom: 1.5rem; flex-wrap:wrap;">
+      <select class="filter-select" id="cat-add-cat" onchange="renderizarCatalogoInclusao()"><option value="">Categorias</option></select>
+      <select class="filter-select" id="cat-add-col" onchange="renderizarCatalogoInclusao()"><option value="">Coleções</option></select>
+    </div>
+    <div class="catalog-grid" id="catalog-add-grid"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" onclick="fecharModalEspecifico('catalog-add-modal')">Fechar Catálogo</button>
+    </div>
   </div>
 </div>
 
@@ -491,16 +532,68 @@ img{display:block; max-width:100%;}
         <div class="form-group"><label>Peso/ML/g</label><input type="text" id="prod-peso"></div>
       </div>
       <div class="form-group"><label>Descrição Detalhada</label><textarea id="prod-desc" rows="3"></textarea></div>
+      
       <div class="form-group">
         <label>Upload de Fotos (Até 5 imagens)</label>
-        <input type="file" id="prod-imagens" accept="image/*" multiple>
-        <p style="font-size:0.7rem; color:var(--texto-suave); margin-top:4px;">Dica: Selecione várias imagens segurando CTRL. A primeira será a foto principal.</p>
+        <input type="file" id="prod-imagens" accept="image/*" multiple onchange="adicionarArquivosPreview(event)">
+        <p style="font-size:0.7rem; color:var(--texto-suave); margin-top:4px;">As imagens aparecerão abaixo. Use as setas para ordenar.</p>
+        <div class="img-preview-row" id="prod-img-preview"></div>
       </div>
+      
       <div class="modal-actions">
         <button type="button" class="btn-secondary" onclick="fecharTudo()">Cancelar</button>
         <button type="submit" id="btn-save-prod" class="btn-primary">Salvar Produto</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- MODAL: NOVO/EDITAR ENDEREÇO (CLIENTE) -->
+<div class="modal-overlay" id="address-modal">
+  <div class="modal" style="max-width: 500px;">
+    <h2>Cadastrar Endereço</h2>
+    <form id="address-form" onsubmit="salvarEndereco(event)">
+      <input type="hidden" id="addr-id">
+      <div class="form-row">
+        <div class="form-group" style="flex:3"><label>Endereço (Rua/Av) *</label><input type="text" id="addr-rua" required></div>
+        <div class="form-group" style="flex:1"><label>Número *</label><input type="text" id="addr-numero" required></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Complemento</label><input type="text" id="addr-comp"></div>
+        <div class="form-group"><label>Bairro *</label><input type="text" id="addr-bairro" required></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Cidade *</label><input type="text" id="addr-cidade" required></div>
+        <div class="form-group">
+          <label>Estado (UF) *</label>
+          <select id="addr-uf" required style="background:white; cursor:pointer;">
+            <option value="AC">AC</option><option value="AL">AL</option><option value="AP">AP</option><option value="AM">AM</option><option value="BA">BA</option><option value="CE">CE</option><option value="DF">DF</option><option value="ES">ES</option><option value="GO">GO</option><option value="MA">MA</option><option value="MT">MT</option><option value="MS">MS</option><option value="MG">MG</option><option value="PA">PA</option><option value="PB">PB</option><option value="PR">PR</option><option value="PE">PE</option><option value="PI">PI</option><option value="RJ">RJ</option><option value="RN">RN</option><option value="RS">RS</option><option value="RO">RO</option><option value="RR">RR</option><option value="SC">SC</option><option value="SP" selected>SP</option><option value="SE">SE</option><option value="TO">TO</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label>CEP *</label><input type="text" id="addr-cep" required oninput="maskCEP(event)" maxlength="9"></div>
+      <div class="form-group">
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.9rem; text-transform:none;">
+          <input type="checkbox" id="addr-main" style="width:auto;"> Definir como endereço principal
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" onclick="fecharModalEspecifico('address-modal')">Cancelar</button>
+        <button type="submit" class="btn-primary" id="btn-save-addr">Salvar Endereço</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: ESCOLHER ENDEREÇO (CHECKOUT) -->
+<div class="modal-overlay" id="choose-address-modal" style="z-index: 1010;">
+  <div class="modal" style="max-width: 500px;">
+    <h2>Meus Endereços</h2>
+    <p class="modal-sub">Selecione um endereço para o envio.</p>
+    <div id="checkout-address-list" style="margin-bottom: 20px;"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" onclick="fecharModalEspecifico('choose-address-modal')">Fechar</button>
+    </div>
   </div>
 </div>
 
@@ -512,6 +605,7 @@ img{display:block; max-width:100%;}
   let userLogged = null; 
   let carrinho = JSON.parse(localStorage.getItem('amoa_carrinho')) || [];
   let dbOrders = []; 
+  let dbAddresses = [];
   let currentAdminStatusFilter = 'Todos';
   let originalOrderItensGrouped = [];
   
@@ -522,6 +616,8 @@ img{display:block; max-width:100%;}
   
   let filtroCatAtivo = '';
   let filtroColAtivo = '';
+  
+  let currentProductImages = []; // Para preview e reordenação
 
   const formatarMoeda = (valor) => Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const agruparItens = (itensArray) => Object.values(itensArray.reduce((acc, item) => { if(!acc[item.id]) acc[item.id] = { ...item, q: 0 }; acc[item.id].q += 1; return acc; }, {}));
@@ -539,7 +635,7 @@ img{display:block; max-width:100%;}
         nome: profile?.nome || session.user.email.split('@')[0],
         telefone: profile?.telefone || ''
       };
-      atualizarHeader(); resetTimer(); carregarDadosIniciais(); carregarPedidos();
+      atualizarHeader(); resetTimer(); carregarDadosIniciais(); carregarPedidos(); carregarEnderecos();
     } else {
       userLogged = null; atualizarHeader(); carregarDadosIniciais();
     }
@@ -572,6 +668,10 @@ img{display:block; max-width:100%;}
     document.getElementById('vitrine-col-buttons').innerHTML = renderBtns(colAtivas, filtroColAtivo, 'col');
     document.getElementById('admin-cat').innerHTML = '<option value="">Todas as Categorias</option>' + catAtivas.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
     document.getElementById('admin-col').innerHTML = '<option value="">Todas as Coleções</option>' + colAtivas.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
+    
+    document.getElementById('cat-add-cat').innerHTML = '<option value="">Categorias</option>' + catAtivas.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
+    document.getElementById('cat-add-col').innerHTML = '<option value="">Coleções</option>' + colAtivas.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
+    
     document.getElementById('prod-cat').innerHTML = catAtivas.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('') || '<option value="">Crie uma categoria primeiro</option>';
     document.getElementById('prod-col').innerHTML = '<option value="">Nenhuma</option>' + colAtivas.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
   }
@@ -625,7 +725,7 @@ img{display:block; max-width:100%;}
     const btn = document.getElementById('header-auth-btn');
     if(!userLogged) { btn.innerText = "Login"; btn.onclick = abrirAuth; } 
     else if(userLogged.role === 'superadmin') { btn.innerText = "Painel Admin"; btn.onclick = () => { voltarParaLoja(); document.getElementById('store-view').classList.add('hide'); document.getElementById('admin-view').classList.remove('hide'); sincronizarAdminConfig(); sincronizarAdminProdutos(); carregarPedidos(); }; } 
-    else { btn.innerText = "Minha Conta"; btn.onclick = () => { voltarParaLoja(); document.getElementById('store-view').classList.add('hide'); document.getElementById('user-view').classList.remove('hide'); carregarPedidos(); }; }
+    else { btn.innerText = "Minha Conta"; btn.onclick = () => { voltarParaLoja(); document.getElementById('store-view').classList.add('hide'); document.getElementById('user-view').classList.remove('hide'); carregarPedidos(); carregarEnderecos(); }; }
   }
 
   function fazerLogout() { supabaseClient.auth.signOut(); userLogged = null; clearTimeout(timeoutID); voltarParaLoja(); atualizarHeader(); }
@@ -637,6 +737,7 @@ img{display:block; max-width:100%;}
   function abrirCarrinho() { document.getElementById('overlay').classList.add('show'); document.getElementById('drawer').classList.add('show'); }
   function fecharCarrinho() { document.getElementById('drawer').classList.remove('show'); document.getElementById('overlay').classList.remove('show'); }
   function fecharTudo() { fecharCarrinho(); document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('show')); }
+  function fecharModalEspecifico(id) { document.getElementById(id).classList.remove('show'); }
 
   function atualizarCarrinho() {
     const tbody = document.getElementById('drawer-body');
@@ -652,10 +753,25 @@ img{display:block; max-width:100%;}
     tbody.innerHTML = html; document.getElementById('cart-total').innerText = formatarMoeda(total);
   }
 
-  function iniciarCheckout() { 
+  function preencherCamposCheckoutComEndereco(addr) {
+    if(!addr) {
+      document.getElementById('chk-rua').value = ''; document.getElementById('chk-numero').value = '';
+      document.getElementById('chk-comp').value = ''; document.getElementById('chk-bairro').value = '';
+      document.getElementById('chk-cidade').value = ''; document.getElementById('chk-uf').value = '';
+      document.getElementById('chk-cep').value = '';
+    } else {
+      document.getElementById('chk-rua').value = addr.rua; document.getElementById('chk-numero').value = addr.numero;
+      document.getElementById('chk-comp').value = addr.complemento || ''; document.getElementById('chk-bairro').value = addr.bairro;
+      document.getElementById('chk-cidade').value = addr.cidade; document.getElementById('chk-uf').value = addr.estado;
+      document.getElementById('chk-cep').value = addr.cep;
+    }
+  }
+
+  async function iniciarCheckout() { 
     if(carrinho.length === 0) return alert("Cesta vazia!"); fecharCarrinho(); 
     if(!userLogged) { document.getElementById('checkout-overlay').classList.add('pending-auth'); abrirAuth(); return; } 
     
+    await carregarEnderecos(); 
     document.getElementById('chk-nome').value = userLogged.nome || '';
     document.getElementById('chk-email').value = userLogged.email || '';
     
@@ -666,6 +782,9 @@ img{display:block; max-width:100%;}
     }
     document.getElementById('chk-ddd').value = ddd; document.getElementById('chk-tel-num').value = telNum;
     
+    let mainAddr = dbAddresses.find(a => a.is_main);
+    preencherCamposCheckoutComEndereco(mainAddr);
+
     let totalCesta = 0, summaryHtml = '';
     agruparItens(carrinho).forEach(item => {
       const sub = getPrecoComDesconto(item) * item.q; totalCesta += sub;
@@ -699,6 +818,101 @@ img{display:block; max-width:100%;}
     } catch(err) { alert("Erro ao salvar pedido: " + err.message); } finally { btn.disabled = false; btn.innerText = "Confirmar pedido"; }
   }
 
+  function abrirModalEscolherEndereco() {
+    if(dbAddresses.length === 0) { alert('Você não tem endereços salvos.'); return; }
+    document.getElementById('checkout-address-list').innerHTML = dbAddresses.map(a => `
+      <div class="address-card ${a.is_main?'main':''}" style="cursor:pointer;" onclick="selecionarEnderecoCheckout('${a.id}')">
+        <p><strong>${a.rua}, ${a.numero}</strong> ${a.complemento ? ' - '+a.complemento : ''}</p>
+        <p style="font-size:0.85rem; color:var(--texto-suave);">${a.bairro}, ${a.cidade} - ${a.estado} | CEP: ${a.cep}</p>
+      </div>
+    `).join('');
+    document.getElementById('choose-address-modal').classList.add('show');
+  }
+
+  function selecionarEnderecoCheckout(id) {
+    const addr = dbAddresses.find(a => a.id === id);
+    if(addr) preencherCamposCheckoutComEndereco(addr);
+    fecharModalEspecifico('choose-address-modal');
+  }
+
+  // ----- ENDEREÇOS (CRUD) -----
+  async function carregarEnderecos() {
+    if(!userLogged) return;
+    const { data, error } = await supabaseClient.from('user_addresses').select('*').eq('user_id', userLogged.id).order('created_at', {ascending: true});
+    if(data) {
+      dbAddresses = data;
+      renderizarEnderecos();
+    }
+  }
+
+  function renderizarEnderecos() {
+    const container = document.getElementById('user-address-list');
+    if(dbAddresses.length === 0) {
+      container.innerHTML = '<p style="color:var(--texto-suave);">Nenhum endereço cadastrado.</p>';
+      return;
+    }
+    container.innerHTML = dbAddresses.map(a => `
+      <div class="address-card ${a.is_main ? 'main' : ''}">
+        <p><strong>${a.rua}, ${a.numero}</strong> ${a.complemento ? ' - '+a.complemento : ''}</p>
+        <p style="font-size:0.85rem; color:var(--texto-suave);">${a.bairro}, ${a.cidade} - ${a.estado} | CEP: ${a.cep}</p>
+        <div style="margin-top:10px; display:flex; gap:10px;">
+          ${!a.is_main ? `<button class="action-link" style="color:var(--verde-escuro)" onclick="tornarEnderecoPrincipal('${a.id}')">Tornar Principal</button>` : ''}
+          <button class="action-link" style="color:var(--erro)" onclick="excluirEndereco('${a.id}')">Excluir</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function abrirModalEndereco() {
+    document.getElementById('address-form').reset();
+    document.getElementById('addr-id').value = '';
+    document.getElementById('address-modal').classList.add('show');
+  }
+
+  async function salvarEndereco(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-save-addr'); btn.disabled = true; btn.innerText = "Salvando...";
+    const id = document.getElementById('addr-id').value;
+    const isMain = document.getElementById('addr-main').checked;
+
+    if(isMain && dbAddresses.length > 0) {
+      await supabaseClient.from('user_addresses').update({is_main: false}).eq('user_id', userLogged.id);
+    }
+
+    const payload = {
+      user_id: userLogged.id,
+      rua: document.getElementById('addr-rua').value, numero: document.getElementById('addr-numero').value,
+      complemento: document.getElementById('addr-comp').value, bairro: document.getElementById('addr-bairro').value,
+      cidade: document.getElementById('addr-cidade').value, estado: document.getElementById('addr-uf').value,
+      cep: document.getElementById('addr-cep').value,
+      is_main: isMain || dbAddresses.length === 0 
+    };
+
+    try {
+      let res;
+      if(id) res = await supabaseClient.from('user_addresses').update(payload).eq('id', id);
+      else res = await supabaseClient.from('user_addresses').insert([payload]);
+      if(res.error) throw new Error(res.error.message);
+      fecharModalEspecifico('address-modal');
+      carregarEnderecos();
+    } catch(err) { alert('Erro: ' + err.message); }
+    finally { btn.disabled = false; btn.innerText = "Salvar Endereço"; }
+  }
+
+  async function tornarEnderecoPrincipal(id) {
+    await supabaseClient.from('user_addresses').update({is_main: false}).eq('user_id', userLogged.id);
+    await supabaseClient.from('user_addresses').update({is_main: true}).eq('id', id);
+    carregarEnderecos();
+  }
+
+  async function excluirEndereco(id) {
+    if(confirm('Tem certeza que deseja excluir este endereço?')) {
+      await supabaseClient.from('user_addresses').delete().eq('id', id);
+      carregarEnderecos();
+    }
+  }
+
+
   // ----- DASHBOARDS (CLIENTE E ADMIN) -----
   async function carregarPedidos() {
     if(!userLogged) return;
@@ -713,7 +927,9 @@ img{display:block; max-width:100%;}
         let fat = validOrders.reduce((acc, o) => acc + Number(o.total), 0);
         let perda = canceladosOrders.reduce((acc, o) => acc + Number(o.total), 0);
         let countFinalizados = dbOrders.filter(o => o.status === 'Entregue').length;
-        let countAlterados = dbOrders.filter(o => o.is_altered === true).length;
+        
+        // Regra Admin: não contar como alterados se o status for "Erro de cadastro"
+        let countAlterados = dbOrders.filter(o => o.is_altered === true && o.status !== 'Erro de cadastro').length;
         
         document.getElementById('metric-pedidos').innerText = validOrders.length;
         document.getElementById('metric-fat').innerText = formatarMoeda(fat);
@@ -779,9 +995,11 @@ img{display:block; max-width:100%;}
       let optionsHTML = selectsArray.map(st => `<option value="${st}" ${o.status===st?'selected':''}>${st}</option>`).join('');
       let selectHTML = `<select class="filter-select" style="padding:4px 6px; min-width:110px;" onchange="atualizarStatusPedido('${o.id}', this.value)">${optionsHTML}</select>`;
       const dataF = new Date(o.created_at).toLocaleDateString('pt-BR');
+      
+      const badgeA = o.is_altered && o.status !== 'Erro de cadastro' ? '<br><span class="badge-altered" style="margin-left:0">Alterado</span>' : '';
 
       return `<tr class="${o.status === 'Erro de cadastro' ? 'row-erro' : ''}">
-        <td style="font-family: monospace; color:var(--texto-suave)">${o.id.split('-')[0].toUpperCase()} ${o.is_altered ? '<br><span class="badge-altered" style="margin-left:0">Alterado</span>' : ''}</td>
+        <td style="font-family: monospace; color:var(--texto-suave)">${o.id.split('-')[0].toUpperCase()} ${badgeA}</td>
         <td>${dataF}</td>
         <td>${o.cliente_nome}<br><small style="color:var(--texto-suave)">${o.cliente_email}</small></td>
         <td><strong>${formatarMoeda(o.total)}</strong></td>
@@ -803,7 +1021,7 @@ img{display:block; max-width:100%;}
     const p = dbOrders.find(o => o.id === id); if(!p) return;
     const dataPedido = new Date(p.created_at).toLocaleDateString('pt-BR');
     document.getElementById('det-id').innerText = "#" + p.id.split('-')[0].toUpperCase() + " - " + dataPedido;
-    document.getElementById('det-altered').classList.toggle('hide', !p.is_altered);
+    document.getElementById('det-altered').classList.toggle('hide', !p.is_altered || p.status === 'Erro de cadastro');
     
     document.getElementById('det-nome').innerText = p.cliente_nome;
     document.getElementById('det-tel').innerText = p.cliente_telefone;
@@ -835,28 +1053,59 @@ img{display:block; max-width:100%;}
   function abrirEditarPedido(id) {
     const p = dbOrders.find(o => o.id === id); if(!p) return;
     document.getElementById('edit-order-id').value = id;
-    
-    // Popula o select de produtos para incluir novos itens
-    document.getElementById('edit-add-prod-select').innerHTML = '<option value="">-- Selecione um produto --</option>' + dbProducts.filter(x => x.is_active).map(x => `<option value="${x.id}">${x.nome}</option>`).join('');
-
     originalOrderItensGrouped = agruparItens(p.itens || []);
     renderizarItensEdicao();
     document.getElementById('order-edit-modal').classList.add('show');
   }
 
-  function adicionarItemEdicao() {
-    const select = document.getElementById('edit-add-prod-select');
-    const prodId = select.value;
-    if(!prodId) return;
-    const prod = dbProducts.find(p => p.id === prodId);
+  // --- CATALOGO INCLUSÃO PEDIDO ---
+  function abrirModalCatalogoInclusao() {
+    document.getElementById('cat-add-cat').value = '';
+    document.getElementById('cat-add-col').value = '';
+    renderizarCatalogoInclusao();
+    document.getElementById('catalog-add-modal').classList.add('show');
+  }
+
+  function renderizarCatalogoInclusao() {
+    const catF = document.getElementById('cat-add-cat').value;
+    const colF = document.getElementById('cat-add-col').value;
+    
+    const ativos = dbProducts.filter(p => p.is_active && (!catF || p.categoria === catF) && (!colF || p.colecao === colF));
+    const container = document.getElementById('catalog-add-grid');
+    
+    if(ativos.length === 0) {
+      container.innerHTML = '<p style="color:var(--texto-suave); padding:10px;">Nenhum produto encontrado.</p>';
+      return;
+    }
+
+    container.innerHTML = ativos.map(p => {
+      let precoFinal = getPrecoComDesconto(p);
+      return `
+      <div class="catalog-item">
+        <h4>${p.nome}</h4>
+        <p style="font-size:0.8rem; color:var(--texto-suave); margin-bottom:10px;">${formatarMoeda(precoFinal)}</p>
+        <div style="display:flex; gap:5px; margin-top:auto;">
+          <input type="number" id="qty-add-${p.id}" value="1" min="1" style="width:50px; padding:4px; font-size:0.85rem; border:1px solid var(--linha); border-radius:4px; text-align:center;">
+          <button type="button" class="btn-primary" style="padding:4px 8px; font-size:0.75rem; flex:1;" onclick="adicionarItemCatalogo('${p.id}')">Adicionar</button>
+        </div>
+      </div>
+      `
+    }).join('');
+  }
+
+  function adicionarItemCatalogo(id) {
+    const prod = dbProducts.find(p => p.id === id);
     if(!prod) return;
+    let inputQty = document.getElementById(`qty-add-${id}`);
+    let qty = parseInt(inputQty.value) || 1;
     
-    let existe = originalOrderItensGrouped.find(i => i.id === prodId);
-    if(existe) { existe.q += 1; } 
-    else { originalOrderItensGrouped.push({...prod, q: 1}); }
+    let existe = originalOrderItensGrouped.find(i => i.id === id);
+    if(existe) { existe.q += qty; } 
+    else { originalOrderItensGrouped.push({...prod, q: qty}); }
     
-    select.value = '';
+    inputQty.value = 1;
     renderizarItensEdicao();
+    alert('Item inserido na lista de edição.');
   }
 
   function recalcularEdicaoPedido() {
@@ -936,39 +1185,104 @@ img{display:block; max-width:100%;}
   async function alternarStatusConfig(table, id, status) { const { error } = await supabaseClient.from(table).update({ is_active: status }).eq('id', id); if(error) alert(error.message); else carregarDadosIniciais(); }
   async function excluirConfig(table, id, nome) { if(confirm('Tem certeza? Os produtos vinculados perderão esta informação.')) { const col = table === 'categories' ? 'categoria' : 'colecao'; await supabaseClient.from('products').update({ [col]: null }).eq(col, nome); const { error } = await supabaseClient.from(table).delete().eq('id', id); if(error) alert(error.message); else carregarDadosIniciais(); } }
 
+  // --- IMAGENS DE PRODUTOS ---
+  function renderizarPreviewImagens() {
+    const container = document.getElementById('prod-img-preview');
+    container.innerHTML = currentProductImages.map((img, i) => `
+      <div class="img-preview-box">
+        <img src="${img.preview}">
+        <button type="button" class="img-action-btn" style="top:2px; right:2px; background:var(--erro);" onclick="removerImagemPreview(${i})">X</button>
+        <button type="button" class="img-action-btn" style="bottom:2px; left:2px;" onclick="moverImagemPreview(${i}, -1)" ${i===0?'disabled':''}>&lt;</button>
+        <button type="button" class="img-action-btn" style="bottom:2px; right:2px;" onclick="moverImagemPreview(${i}, 1)" ${i===currentProductImages.length-1?'disabled':''}>&gt;</button>
+      </div>
+    `).join('');
+  }
+
+  function adicionarArquivosPreview(e) {
+    const files = Array.from(e.target.files);
+    files.forEach(f => {
+      if(currentProductImages.length < 5) {
+        currentProductImages.push({ type: 'file', file: f, preview: URL.createObjectURL(f) });
+      }
+    });
+    e.target.value = '';
+    renderizarPreviewImagens();
+  }
+
+  function removerImagemPreview(index) {
+    currentProductImages.splice(index, 1);
+    renderizarPreviewImagens();
+  }
+
+  function moverImagemPreview(index, direcao) {
+    const target = index + direcao;
+    if(target >= 0 && target < currentProductImages.length) {
+      let temp = currentProductImages[index];
+      currentProductImages[index] = currentProductImages[target];
+      currentProductImages[target] = temp;
+      renderizarPreviewImagens();
+    }
+  }
+
   function abrirModalProduto(id = null) {
-    document.getElementById('product-form').reset(); document.getElementById('modal-prod-title').innerText = id ? "Editar Produto" : "Cadastrar Produto"; document.getElementById('prod-id').value = id || "";
+    document.getElementById('product-form').reset(); 
+    document.getElementById('modal-prod-title').innerText = id ? "Editar Produto" : "Cadastrar Produto"; 
+    document.getElementById('prod-id').value = id || "";
+    currentProductImages = [];
+    
     if(id) {
       const p = dbProducts.find(x => x.id === id);
       if(p) {
         document.getElementById('prod-nome').value = p.nome; document.getElementById('prod-cat').value = p.categoria || ""; document.getElementById('prod-col').value = p.colecao || ""; document.getElementById('prod-preco').value = p.preco;
         document.getElementById('prod-desc-perc').value = p.desconto_percentual || 0; document.getElementById('prod-estoque').value = p.estoque || 0; document.getElementById('prod-peso').value = p.peso || ""; document.getElementById('prod-desc').value = p.descricao || "";
+        
+        if(p.imagens) {
+          currentProductImages = p.imagens.map(url => ({ type: 'url', preview: url }));
+        }
       }
     }
+    renderizarPreviewImagens();
     document.getElementById('product-modal').classList.add('show');
   }
 
   async function salvarProduto(e) {
     e.preventDefault(); const btn = document.getElementById('btn-save-prod'); btn.disabled = true; btn.innerText = "Salvando...";
     try {
-      const id = document.getElementById('prod-id').value; const files = document.getElementById('prod-imagens').files;
-      if(files.length > 5) { alert("Máximo de 5 imagens."); btn.disabled = false; btn.innerText = "Salvar Produto"; return; }
-      let imagensUrl = id ? (dbProducts.find(x => x.id === id)?.imagens || []) : [];
-      if(files.length > 0) {
-        imagensUrl = []; 
-        for(let i=0; i<files.length; i++) {
-          const fileName = `${Math.random()}.${files[i].name.split('.').pop()}`;
-          const { data, error } = await supabaseClient.storage.from('produtos').upload(fileName, files[i]);
+      const id = document.getElementById('prod-id').value;
+      if(currentProductImages.length > 5) { alert("Máximo de 5 imagens."); btn.disabled = false; btn.innerText = "Salvar Produto"; return; }
+      
+      let finalUrls = [];
+      for (let img of currentProductImages) {
+        if (img.type === 'url') {
+          finalUrls.push(img.preview);
+        } else if (img.type === 'file') {
+          const fileName = `${Math.random()}.${img.file.name.split('.').pop()}`;
+          const { data, error } = await supabaseClient.storage.from('produtos').upload(fileName, img.file);
           if(error) throw new Error(error.message);
-          if(data) imagensUrl.push(supabaseClient.storage.from('produtos').getPublicUrl(data.path).data.publicUrl);
+          if(data) {
+            finalUrls.push(supabaseClient.storage.from('produtos').getPublicUrl(data.path).data.publicUrl);
+          }
         }
       }
-      const prodData = { nome: document.getElementById('prod-nome').value, categoria: document.getElementById('prod-cat').value || null, colecao: document.getElementById('prod-col').value || null, preco: parseFloat(document.getElementById('prod-preco').value), desconto_percentual: parseInt(document.getElementById('prod-desc-perc').value) || 0, estoque: parseInt(document.getElementById('prod-estoque').value) || 0, peso: document.getElementById('prod-peso').value, descricao: document.getElementById('prod-desc').value, imagens: imagensUrl };
+
+      const prodData = { 
+        nome: document.getElementById('prod-nome').value, 
+        categoria: document.getElementById('prod-cat').value || null, 
+        colecao: document.getElementById('prod-col').value || null, 
+        preco: parseFloat(document.getElementById('prod-preco').value), 
+        desconto_percentual: parseInt(document.getElementById('prod-desc-perc').value) || 0, 
+        estoque: parseInt(document.getElementById('prod-estoque').value) || 0, 
+        peso: document.getElementById('prod-peso').value, 
+        descricao: document.getElementById('prod-desc').value, 
+        imagens: finalUrls 
+      };
+      
       let response = id ? await supabaseClient.from('products').update(prodData).eq('id', id).select() : await supabaseClient.from('products').insert([prodData]).select();
       if(response.error) throw new Error(response.error.message);
       fecharTudo(); carregarDadosIniciais();
     } catch (err) { alert(`ALERTA DE FALHA: ${err.message}`); } finally { btn.disabled = false; btn.innerText = "Salvar Produto"; }
   }
+
   async function alternarStatusProduto(id, is_active) { const { error } = await supabaseClient.from('products').update({ is_active }).eq('id', id); if(error) alert(error.message); else carregarDadosIniciais(); }
   async function excluirProduto(id) { if(confirm("Deseja realmente excluir este produto permanentemente?")) { const { error } = await supabaseClient.from('products').delete().eq('id', id); if(error) alert(error.message); else carregarDadosIniciais(); } }
 </script>
