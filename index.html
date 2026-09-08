@@ -75,7 +75,8 @@ img{display:block; max-width:100%;}
 .cart-item-info{flex:1;}
 .cart-item-info h4{font-size:0.92rem; font-weight:600; margin-bottom:2px; color: var(--texto);}
 .cart-item-price{font-size:0.85rem; display: flex; gap: 6px; align-items: baseline;}
-.cart-item-remove{background:none; border:none; color:var(--erro); font-size:0.75rem; text-decoration:underline; cursor:pointer; margin-top:4px;}
+.qty-btn { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--linha); background: var(--branco); color: var(--texto); font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.qty-btn:hover { background: var(--areia); }
 .drawer-footer{border-top:1px solid var(--linha); padding: 1.1rem 1.4rem 1.4rem;}
 .cart-total-row{display:flex; justify-content:space-between; font-size:1.05rem; margin-bottom: 14px;}
 
@@ -177,7 +178,6 @@ img{display:block; max-width:100%;}
 <div id="store-view">
   <header class="header">
     <div>
-      <!-- INCLUA O LINK DA SUA LOGO ABAIXO -->
       <img src="https://stiqoqwdhrdydokjhwcn.supabase.co/storage/v1/object/public/assets/logo.png" alt="Amoá" class="brand-logo">
     </div>
     <div class="header-right">
@@ -209,7 +209,7 @@ img{display:block; max-width:100%;}
   </main>
 
   <footer class="footer">
-    <p>Amoá &mdash; feito à mão, com cuidado.</p>
+    <p>Amoá &mdash; Com amor, por amor!</p>
     <p style="margin-top:10px; font-size:0.78rem; opacity:0.6;">Criado pela Murphy Company</p>
   </footer>
 </div>
@@ -370,12 +370,13 @@ img{display:block; max-width:100%;}
       <div id="admin-tab-metrics">
         <h2 style="font-family: Georgia, serif; color: var(--verde-escuro); margin-bottom: 1.5rem;">Visão Geral</h2>
         <div class="metrics-grid">
-          <div class="metric-card"><h4>Faturamento</h4><p id="metric-fat">R$ 0,00</p></div>
-          <div class="metric-card"><h4>Ticket Médio</h4><p id="metric-tkt">R$ 0,00</p></div>
           <div class="metric-card"><h4>Pedidos Criados</h4><p id="metric-pedidos">0</p></div>
-          <div class="metric-card"><h4>Finalizados</h4><p id="metric-finalizados">0</p></div>
-          <div class="metric-card"><h4>Cancelados</h4><p id="metric-cancelados">0</p></div>
+          <div class="metric-card"><h4>Oportunidades</h4><p id="metric-oportunidades">R$ 0,00</p></div>
+          <div class="metric-card"><h4>Faturamento</h4><p id="metric-fat">R$ 0,00</p></div>
+          <div class="metric-card"><h4>Pedidos Fechados</h4><p id="metric-fechados">0</p></div>
+          <div class="metric-card"><h4>Ticket Médio</h4><p id="metric-tkt">R$ 0,00</p></div>
           <div class="metric-card"><h4>Alterados</h4><p id="metric-alterados">0</p></div>
+          <div class="metric-card"><h4>Cancelados</h4><p id="metric-cancelados">0</p></div>
           <div class="metric-card"><h4>Perda (Cancelados)</h4><p id="metric-perda" style="color:var(--erro)">R$ 0,00</p></div>
         </div>
       </div>
@@ -751,7 +752,19 @@ img{display:block; max-width:100%;}
   // ----- CARRINHO E CHECKOUT -----
   function salvarCarrinhoLocal() { localStorage.setItem('amoa_carrinho', JSON.stringify(carrinho)); }
   function adicionarAoCarrinho(id) { const prod = dbProducts.find(p => p.id === id); if(prod) { carrinho.push(prod); salvarCarrinhoLocal(); atualizarCarrinho(); abrirCarrinho(); } }
-  function removerDoCarrinho(index) { carrinho.splice(index, 1); salvarCarrinhoLocal(); atualizarCarrinho(); }
+  
+  function alterarQtdCarrinho(id, delta) {
+    if (delta > 0) {
+      const prod = dbProducts.find(p => p.id === id);
+      if(prod) carrinho.push(prod);
+    } else {
+      const index = carrinho.findIndex(p => p.id === id);
+      if(index > -1) carrinho.splice(index, 1);
+    }
+    salvarCarrinhoLocal();
+    atualizarCarrinho();
+  }
+
   function abrirCarrinho() { document.getElementById('overlay').classList.add('show'); document.getElementById('drawer').classList.add('show'); }
   function fecharCarrinho() { document.getElementById('drawer').classList.remove('show'); document.getElementById('overlay').classList.remove('show'); }
   function fecharTudo() { fecharCarrinho(); document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('show')); }
@@ -763,12 +776,31 @@ img{display:block; max-width:100%;}
     if(carrinho.length === 0) { tbody.innerHTML = '<div style="text-align:center; padding:20px; color:var(--texto-suave);">Cesta vazia.</div>'; document.getElementById('cart-total').innerText = 'R$ 0,00'; return; }
     
     let html = '', total = 0;
-    carrinho.forEach((item, i) => {
-      let precoFinal = getPrecoComDesconto(item); total += precoFinal;
-      let displayPreco = item.desconto_percentual > 0 ? `<span class="price-old" style="font-size:0.75rem;">${formatarMoeda(item.preco)}</span> <strong style="color:var(--verde-escuro)">${formatarMoeda(precoFinal)}</strong>` : `<strong style="color:var(--verde-escuro)">${formatarMoeda(precoFinal)}</strong>`;
-      html += `<div class="cart-item"><div class="cart-item-info"><h4>${item.nome}</h4><div class="cart-item-price">${displayPreco}</div></div><button class="cart-item-remove" onclick="removerDoCarrinho(${i})">Remover</button></div>`;
+    const itensAgrupados = agruparItens(carrinho);
+    
+    itensAgrupados.forEach((item) => {
+      let precoFinal = getPrecoComDesconto(item); 
+      total += precoFinal * item.q;
+      let displayPreco = item.desconto_percentual > 0 
+        ? `<span class="price-old" style="font-size:0.75rem;">${formatarMoeda(item.preco)}</span> <strong style="color:var(--verde-escuro)">${formatarMoeda(precoFinal)}</strong>` 
+        : `<strong style="color:var(--verde-escuro)">${formatarMoeda(precoFinal)}</strong>`;
+      
+      html += `
+      <div class="cart-item">
+        <div class="cart-item-info">
+          <h4>${item.nome}</h4>
+          <div class="cart-item-price">${displayPreco}</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button class="qty-btn" onclick="alterarQtdCarrinho('${item.id}', -1)">-</button>
+          <span style="font-size:0.9rem; min-width:12px; text-align:center;">${item.q}</span>
+          <button class="qty-btn" onclick="alterarQtdCarrinho('${item.id}', 1)">+</button>
+        </div>
+      </div>`;
     });
-    tbody.innerHTML = html; document.getElementById('cart-total').innerText = formatarMoeda(total);
+    
+    tbody.innerHTML = html; 
+    document.getElementById('cart-total').innerText = formatarMoeda(total);
   }
 
   function preencherCamposCheckoutComEndereco(addr) {
@@ -940,21 +972,25 @@ img{display:block; max-width:100%;}
       if(data) {
         dbOrders = data;
         
-        let validOrders = dbOrders.filter(o => o.status !== 'Cancelado' && o.status !== 'Erro de cadastro');
-        let canceladosOrders = dbOrders.filter(o => o.status === 'Cancelado');
-        let fat = validOrders.reduce((acc, o) => acc + Number(o.total), 0);
-        let perda = canceladosOrders.reduce((acc, o) => acc + Number(o.total), 0);
-        let countFinalizados = dbOrders.filter(o => o.status === 'Entregue').length;
+        let countCriados = dbOrders.length;
+        let oportunidades = dbOrders.reduce((acc, o) => acc + Number(o.total), 0);
         
-        // Regra Admin: não contar como alterados se o status for "Erro de cadastro"
+        let countFechados = dbOrders.filter(o => o.status === 'Entregue').length;
+        let faturamento = dbOrders.filter(o => o.status === 'Entregue').reduce((acc, o) => acc + Number(o.total), 0);
+        let ticketMedio = countFechados > 0 ? (faturamento / countFechados) : 0;
+
+        let canceladosOrders = dbOrders.filter(o => o.status === 'Cancelado');
+        let perda = canceladosOrders.reduce((acc, o) => acc + Number(o.total), 0);
+        
         let countAlterados = dbOrders.filter(o => o.is_altered === true && o.status !== 'Erro de cadastro').length;
         
-        document.getElementById('metric-pedidos').innerText = validOrders.length;
-        document.getElementById('metric-fat').innerText = formatarMoeda(fat);
-        document.getElementById('metric-tkt').innerText = validOrders.length ? formatarMoeda(fat/validOrders.length) : 'R$ 0,00';
-        document.getElementById('metric-finalizados').innerText = countFinalizados;
-        document.getElementById('metric-cancelados').innerText = canceladosOrders.length;
+        document.getElementById('metric-pedidos').innerText = countCriados;
+        document.getElementById('metric-oportunidades').innerText = formatarMoeda(oportunidades);
+        document.getElementById('metric-fat').innerText = formatarMoeda(faturamento);
+        document.getElementById('metric-fechados').innerText = countFechados;
+        document.getElementById('metric-tkt').innerText = formatarMoeda(ticketMedio);
         document.getElementById('metric-alterados').innerText = countAlterados;
+        document.getElementById('metric-cancelados').innerText = canceladosOrders.length;
         document.getElementById('metric-perda').innerText = formatarMoeda(perda);
         
         document.getElementById('count-todos').innerText = dbOrders.length;
@@ -962,7 +998,7 @@ img{display:block; max-width:100%;}
         document.getElementById('count-aprovado').innerText = dbOrders.filter(o=>o.status==='Aprovado').length;
         document.getElementById('count-separacao').innerText = dbOrders.filter(o=>o.status==='Em separação').length;
         document.getElementById('count-enviado').innerText = dbOrders.filter(o=>o.status==='Enviado').length;
-        document.getElementById('count-entregue').innerText = countFinalizados;
+        document.getElementById('count-entregue').innerText = countFechados;
         document.getElementById('count-cancelado').innerText = canceladosOrders.length;
         document.getElementById('count-erro').innerText = dbOrders.filter(o=>o.status==='Erro de cadastro').length;
 
@@ -1011,7 +1047,7 @@ img{display:block; max-width:100%;}
     
     document.getElementById('admin-orders-table').innerHTML = list.map(o => {
       let optionsHTML = selectsArray.map(st => `<option value="${st}" ${o.status===st?'selected':''}>${st}</option>`).join('');
-      let selectHTML = `<select class="filter-select" style="padding:4px 6px; min-width:110px;" onchange="atualizarStatusPedido('${o.id}', this.value)">${optionsHTML}</select>`;
+      let selectHTML = `<select class="filter-select select-status-${o.id}" style="padding:4px 6px; min-width:110px;" onchange="atualizarStatusPedido('${o.id}', this.value)">${optionsHTML}</select>`;
       const dataF = new Date(o.created_at).toLocaleDateString('pt-BR');
       
       const badgeA = o.is_altered && o.status !== 'Erro de cadastro' ? '<br><span class="badge-altered" style="margin-left:0">Alterado</span>' : '';
@@ -1031,8 +1067,43 @@ img{display:block; max-width:100%;}
   }
 
   async function atualizarStatusPedido(id, novoStatus) {
+    const pedido = dbOrders.find(o => o.id === id);
+    if (!pedido) return;
+    
+    const statusAntigo = pedido.status;
+    if (statusAntigo === novoStatus) return;
+
+    const btn = document.querySelector(`.select-status-${id}`);
+    if(btn) btn.disabled = true;
+
+    const statusComEstoqueBaixado = ['Aprovado', 'Em separação', 'Enviado', 'Entregue'];
+    const tavaBaixado = statusComEstoqueBaixado.includes(statusAntigo);
+    const vaiBaixar = statusComEstoqueBaixado.includes(novoStatus);
+
     const { error } = await supabaseClient.from('orders').update({ status: novoStatus }).eq('id', id);
-    if(error) alert('Erro ao atualizar status.'); else carregarPedidos();
+    
+    if(error) {
+      alert('Erro ao atualizar status.');
+      if(btn) btn.disabled = false;
+      return;
+    }
+
+    // Lógica inteligente de atualização de estoque
+    if (tavaBaixado !== vaiBaixar) {
+      const operacao = vaiBaixar ? -1 : 1; 
+      const itensAgrupados = agruparItens(pedido.itens || []);
+
+      for (let item of itensAgrupados) {
+        const { data: pData } = await supabaseClient.from('products').select('estoque').eq('id', item.id).single();
+        if (pData) {
+          const novoEstoque = pData.estoque + (item.q * operacao);
+          await supabaseClient.from('products').update({ estoque: novoEstoque }).eq('id', item.id);
+        }
+      }
+    }
+
+    await carregarPedidos();
+    await carregarDadosIniciais(); // Atualiza a tabela de produtos para refletir o novo estoque no admin
   }
 
   function abrirDetalhePedido(id) {
