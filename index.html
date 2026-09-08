@@ -328,6 +328,7 @@ img{display:block; max-width:100%;}
     <aside class="sidebar">
       <button class="sidebar-btn active" onclick="mudarAbaUser('pedidos', this)">Meus Pedidos</button>
       <button class="sidebar-btn" onclick="mudarAbaUser('enderecos', this)">Meus Endereços</button>
+      <button class="sidebar-btn" onclick="mudarAbaUser('perfil', this)">Meus Dados</button>
       <button class="sidebar-btn" onclick="voltarParaLoja()">Voltar à Loja</button>
       <button class="sidebar-btn" style="color:var(--erro)" onclick="fazerLogout()">Sair da Conta</button>
     </aside>
@@ -344,6 +345,17 @@ img{display:block; max-width:100%;}
           <button class="btn-primary" style="padding: 8px 16px; font-size: 0.85rem;" onclick="abrirModalEndereco()">+ Novo Endereço</button>
         </div>
         <div id="user-address-list"></div>
+      </div>
+
+      <!-- ABA DADOS DO CLIENTE -->
+      <div id="user-tab-perfil" class="hide">
+        <h2 style="font-family: Georgia, serif; color: var(--verde-escuro); margin-bottom: 1.5rem;">Meus Dados</h2>
+        <form id="profile-form" style="max-width: 500px;" onsubmit="salvarPerfil(event)">
+          <div class="form-group"><label>Nome Completo *</label><input type="text" id="prof-nome" required></div>
+          <div class="form-group"><label>WhatsApp *</label><input type="text" id="prof-tel" required oninput="maskPhone(event)" maxlength="15"></div>
+          <div class="form-group"><label>E-mail *</label><input type="email" id="prof-email" required></div>
+          <button type="submit" class="btn-primary" id="btn-save-prof" style="margin-top: 10px;">Salvar Alterações</button>
+        </form>
       </div>
     </main>
   </div>
@@ -654,7 +666,7 @@ img{display:block; max-width:100%;}
         nome: profile?.nome || session.user.email.split('@')[0],
         telefone: profile?.telefone || ''
       };
-      atualizarHeader(); resetTimer(); carregarDadosIniciais(); carregarPedidos(); carregarEnderecos();
+      atualizarHeader(); resetTimer(); carregarDadosIniciais(); carregarPedidos(); carregarEnderecos(); carregarPerfilForm();
     } else {
       userLogged = null; atualizarHeader(); carregarDadosIniciais();
     }
@@ -885,6 +897,45 @@ img{display:block; max-width:100%;}
     fecharModalEspecifico('choose-address-modal');
   }
 
+  // ----- DADOS DO CLIENTE (PERFIL) -----
+  function carregarPerfilForm() {
+    if(userLogged) {
+      document.getElementById('prof-nome').value = userLogged.nome || '';
+      document.getElementById('prof-tel').value = userLogged.telefone || '';
+      document.getElementById('prof-email').value = userLogged.email || '';
+    }
+  }
+
+  async function salvarPerfil(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-save-prof');
+    btn.disabled = true; btn.innerText = "Salvando...";
+
+    const nome = document.getElementById('prof-nome').value;
+    const tel = document.getElementById('prof-tel').value;
+    const email = document.getElementById('prof-email').value;
+
+    try {
+      if(email !== userLogged.email) {
+        const { error: authErr } = await supabaseClient.auth.updateUser({ email: email });
+        if(authErr) throw new Error("Erro ao atualizar e-mail no painel de autenticação: " + authErr.message);
+        alert("E-mail atualizado. Pode ser necessário confirmá-lo pelo link enviado ao novo endereço para que o login mude.");
+      }
+      
+      const { error: profErr } = await supabaseClient.from('profiles').update({ nome: nome, telefone: tel, email: email }).eq('id', userLogged.id);
+      if(profErr) throw new Error(profErr.message);
+
+      userLogged.nome = nome;
+      userLogged.telefone = tel;
+      userLogged.email = email;
+      alert("Seus dados foram atualizados com sucesso!");
+    } catch(err) {
+      alert("Erro: " + err.message);
+    } finally {
+      btn.disabled = false; btn.innerText = "Salvar Alterações";
+    }
+  }
+
   // ----- ENDEREÇOS (CRUD) -----
   async function carregarEnderecos() {
     if(!userLogged) return;
@@ -907,6 +958,7 @@ img{display:block; max-width:100%;}
         <p style="font-size:0.85rem; color:var(--texto-suave);">${a.bairro}, ${a.cidade} - ${a.estado} | CEP: ${a.cep}</p>
         <div style="margin-top:10px; display:flex; gap:10px;">
           ${!a.is_main ? `<button class="action-link" style="color:var(--verde-escuro)" onclick="tornarEnderecoPrincipal('${a.id}')">Tornar Principal</button>` : ''}
+          <button class="action-link" style="color:var(--verde-escuro)" onclick="editarEndereco('${a.id}')">Editar</button>
           <button class="action-link" style="color:var(--erro)" onclick="excluirEndereco('${a.id}')">Excluir</button>
         </div>
       </div>
@@ -916,6 +968,22 @@ img{display:block; max-width:100%;}
   function abrirModalEndereco() {
     document.getElementById('address-form').reset();
     document.getElementById('addr-id').value = '';
+    document.getElementById('addr-uf').value = 'SP'; // valor padrão
+    document.getElementById('address-modal').classList.add('show');
+  }
+
+  function editarEndereco(id) {
+    const addr = dbAddresses.find(a => a.id === id);
+    if(!addr) return;
+    document.getElementById('addr-id').value = addr.id;
+    document.getElementById('addr-rua').value = addr.rua;
+    document.getElementById('addr-numero').value = addr.numero;
+    document.getElementById('addr-comp').value = addr.complemento || '';
+    document.getElementById('addr-bairro').value = addr.bairro;
+    document.getElementById('addr-cidade').value = addr.cidade;
+    document.getElementById('addr-uf').value = addr.estado;
+    document.getElementById('addr-cep').value = addr.cep;
+    document.getElementById('addr-main').checked = addr.is_main;
     document.getElementById('address-modal').classList.add('show');
   }
 
@@ -972,17 +1040,19 @@ img{display:block; max-width:100%;}
       if(data) {
         dbOrders = data;
         
-        let countCriados = dbOrders.length;
-        let oportunidades = dbOrders.reduce((acc, o) => acc + Number(o.total), 0);
+        let dbOrdersValid = dbOrders.filter(o => o.status !== 'Erro de cadastro');
+
+        let countCriados = dbOrdersValid.length;
+        let oportunidades = dbOrdersValid.reduce((acc, o) => acc + Number(o.total), 0);
         
-        let countFechados = dbOrders.filter(o => o.status === 'Entregue').length;
-        let faturamento = dbOrders.filter(o => o.status === 'Entregue').reduce((acc, o) => acc + Number(o.total), 0);
+        let countFechados = dbOrdersValid.filter(o => o.status === 'Entregue').length;
+        let faturamento = dbOrdersValid.filter(o => o.status === 'Entregue').reduce((acc, o) => acc + Number(o.total), 0);
         let ticketMedio = countFechados > 0 ? (faturamento / countFechados) : 0;
 
-        let canceladosOrders = dbOrders.filter(o => o.status === 'Cancelado');
+        let canceladosOrders = dbOrdersValid.filter(o => o.status === 'Cancelado');
         let perda = canceladosOrders.reduce((acc, o) => acc + Number(o.total), 0);
         
-        let countAlterados = dbOrders.filter(o => o.is_altered === true && o.status !== 'Erro de cadastro').length;
+        let countAlterados = dbOrdersValid.filter(o => o.is_altered === true).length;
         
         document.getElementById('metric-pedidos').innerText = countCriados;
         document.getElementById('metric-oportunidades').innerText = formatarMoeda(oportunidades);
@@ -1234,7 +1304,7 @@ img{display:block; max-width:100%;}
     } catch(err) { alert("Erro ao alterar pedido: " + err.message); } finally { btn.disabled = false; btn.innerText = "Salvar Alterações"; }
   }
 
-  function mudarAbaUser(aba, btn) { document.querySelectorAll('#user-view .dash-content > div').forEach(d => d.classList.add('hide')); document.getElementById('user-tab-' + aba).classList.remove('hide'); document.querySelectorAll('#user-view .sidebar-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
+  function mudarAbaUser(aba, btn) { document.querySelectorAll('#user-view .dash-content > div').forEach(d => d.classList.add('hide')); document.getElementById('user-tab-' + aba).classList.remove('hide'); document.querySelectorAll('#user-view .sidebar-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); if(aba === 'perfil') carregarPerfilForm(); }
   function mudarAbaAdmin(aba, btn) { document.querySelectorAll('#admin-view .dash-content > div').forEach(d => d.classList.add('hide')); document.getElementById('admin-tab-' + aba).classList.remove('hide'); document.querySelectorAll('#admin-view .sidebar-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
 
   // ----- VITRINE -----
